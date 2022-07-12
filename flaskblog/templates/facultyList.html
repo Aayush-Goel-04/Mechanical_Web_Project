@@ -1,0 +1,91 @@
+{%extends "layout.html" %}
+{% block Table %}
+<h1 style="text-align:center;"><b>Facultys table</b></h1>
+<div style="width: 98%; margin-left:1%; ">
+    <div class="col-md-12">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <label for="semester">Select Semester to fetch Data</label>
+            <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                {% for semester in semesters %}
+                <option value="{{semester.id}}">{{semester.semester}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <form action="/findFaculty">
+                <div class="row">
+                    <label for="faculty"> Search Faculty </label>
+                    <select name="faculty" data-live-search="true" id="faculty" class="form-control" title="Select Faculty">
+                        {% for faculty in facultys %}
+                        <option value="{{faculty.id}}">{{faculty.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                    <button type="submit" class="btn btn-primary">Get Faculty</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Ldap</th>
+                <th>Email</th>
+                <th>Field</th>
+                <th>Courses</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="faculty_rows">
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+    
+    $(document).ready(function () {
+        $("#semester").selectpicker();
+        $("#faculty").selectpicker();
+
+        function get_faculty_list(semester_id) {
+            $.ajax({
+                url: "/get_faculty_list",
+                method: "POST",
+                data: {'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    facultys = resp.facultys;
+                    const rows = document.getElementById('faculty_rows');
+                    rows.innerHTML = "";
+                    for(let i=0 ; i<facultys.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = i+1;
+                        row.insertCell(1).innerHTML = '<a href="{{url_for("facultyData", faculty_id="")}}'+facultys[i]["id"]+'">'+facultys[i]["name"]+'</a>';
+                        row.insertCell(2).innerHTML = facultys[i]['ldap'];
+                        row.insertCell(3).innerHTML = facultys[i]['email'];
+                        row.insertCell(4).innerHTML = facultys[i]['field'];
+                        var html = '';
+                        for(let j=0 ; j<facultys[i]["courses"].length ; j++){
+                            html += '<p><a href="{{url_for("courseData", course_id="")}}'+facultys[i]["courses"][j]["id"]+'">'+facultys[i]["courses"][j]["name"]+'</a></p>';
+                        }
+                        row.insertCell(5).innerHTML = html;
+                        row.insertCell(6).innerHTML = facultys[i]['status'];
+                    }
+                },
+            });
+        }
+        $(document).on("change", "#semester", function () {
+            var semester_id = $("#semester").val();
+            get_faculty_list(semester_id);
+        });
+    });
+</script>
+{% endblock Table %}

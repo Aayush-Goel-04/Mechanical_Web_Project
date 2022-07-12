@@ -1,0 +1,251 @@
+{%extends "layout.html" %}
+{% block content %}
+<div id="snackbar"></div>
+<div style="width: 80%; margin-left:10%; margin-top:2%;">
+<div class="col-md-12">
+    <div class="col-md-6">
+        <div class="row">
+            <h4><b>Email</b> : {{student.email}}</h4>
+            <h4><b>Name</b> : {{student.name}}</h4>
+            <h4><b>Roll Number</b> : {{student.roll_number}}</h4>
+            <h4><b>Faculty Advisor's</b> :</h4>
+            <div id="facadsData">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="program">Change Program</label>
+                <select name="program" data-live-search="true" id="program" class="form-control" title="Select Program">
+                    {% for program in programs %}
+                        {% if program == student.program %}
+                        <option value="{{ program }}" selected>{{ program }}</option>
+                        {% else %}
+                        <option value="{{ program }}">{{ program }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="field">Change Field</label>
+                <select name="field" data-live-search="true" id="field" class="form-control" title="Select Field">
+                    {% for field in fields %}
+                        {% if field == student.field %}
+                        <option value="{{ field }}" selected>{{ field }}</option>
+                        {% else %}
+                        <option value="{{ field }}">{{ field }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label>Alternate Email</label>
+                <input type="text" class="form-control" name="alt_email" id="alt_email" value="{{ student.alt_email }}">
+            </div>
+            <div class="col-md-6">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" name="phone_number" id="phone_number" value="{{ student.phone_number }}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label>Hostel Number</label>
+                <input type="number" class="form-control" name="hostel_no" id="hostel_no" value="{{ student.hostel_no }}">
+            </div>
+            <div class="col-md-6">
+                <label>Room Number</label>
+                <input type="number" class="form-control" name="room_no" id="room_no" value="{{ student.room_no }}">
+            </div>
+        </div>
+        <input type="submit" id="StudentDataSubmit" value="Save Changes" class="btn btn-primary btn-sm" style="margin: 1% 0% 2%;">
+
+
+        <h4 style="text-align:center"><b> Add Faculty Advisor </b></h4>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="facadStatus"> Select Status </label>
+                <select name="facadStatus" data-live-search="true" id="facadStatus" class="form-control" title="Select Facad Status">
+                    <option value="">-- Select --</option>
+                    <option value="primary">Primary</option>
+                    <option value="secondary">Secondary</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="facadID">Select Faculty</label>
+                <select name="facadID" data-live-search="true" id="facadID" class="form-control" title="Select Faculty Advisor">
+                    <option value="">-- Select --</option>
+                    {% for faculty in facultys %}
+                    <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <input type="submit" id="addFacad" value="Save Changes" class="btn btn-primary btn-sm" style="margin: 1% 0% 2%;">
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row" style="text-align:center;">
+        <hr>
+        <h4><b> Course Alloted as TA </b></h4>
+        {% for course_ta in course_tas %}
+            <p>{{course_ta.semester}} | {{course_ta.course}} | {{course_ta.section}}</p>
+        {% endfor %}
+    </div>
+    <div class="row" style="text-align:center; margin-bottom:5%;">
+        <hr>
+        <h4><b>Attendance table</b></h4>
+        <a href="{{ url_for( 'markAttendance', student_id=student.id, student_token=student.token ) }}">
+            <input type="button" class="btn btn-primary btn-lg" value="Mark Attendance" style="margin-bottom:1%;"/>
+        </a>
+        <br>
+        <table class="table table-bordered sortable">
+            <thead>
+                <tr>
+                    <th>Sn.no</th>
+                    <th>Attendance Dates</th>
+                    <th>Date Time Posted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance.id }}</td>
+                        <td>{{ attendance.date_posted }}</td>
+                        <td>{{ attendance.datetime_posted }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+
+<script>
+    function getFacadData() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const student_id = urlParams.get('student_id');
+        $.ajax({
+            url: "/getFacadData",
+            method: "POST",
+            data: {'student_id': student_id},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                var html = "";
+                if(resp.facads.length>0){
+                    var html = '';
+                    for (var i = 0; i < resp.facads.length; i++) {
+                        html += '<h4 style="float:left">'+resp.facads[i].status+' : '+resp.facads[i].facad_name+'</h4>';
+                        html += '<h4><button type="button" onclick="facadRemove('+resp.facads[i].id+');" class="btn btn-danger btn-sm"> Remove </button></h4>';
+                    }
+                    $("#facadsData").html(html);
+                }else{
+                    $("#facadsData").html('<h4>None</h4>');
+                }
+            },
+        });
+    }
+
+    function facadRemove(facad_id) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const student_id = urlParams.get('student_id')
+        $.ajax({
+                url: "/facadRemove",
+                method: "POST",
+                data: {'facad_id':facad_id,'student_id':student_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    getFacadData();
+                    if(typeof resp.message != 'undefined'){
+                        var x = document.getElementById("snackbar");
+                        x.className = "show";
+                        var html = '';
+                        html += '<p>'+resp.message+'</p>'
+                        $("#snackbar").html(html);
+                        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                    }
+                },
+            });
+        
+    }
+    
+    $(document).ready(function () {
+        $("#facadID").selectpicker();
+        $("#field").selectpicker();
+        $("#program").selectpicker();
+        $("#facadStatus").selectpicker();
+
+        getFacadData();
+
+        $(document).on("click", "#StudentDataSubmit", function () {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const student_id = urlParams.get('student_id')
+            var field = $("#field").val();
+            var program = $("#program").val();
+            if(!!field && !!program){
+                $.ajax({
+                    url: "/editStudentData",
+                    method: "POST",
+                    data: {'phone_number':$("#phone_number").val(),'hostel_no':$("#hostel_no").val(),
+                            'room_no':$("#room_no").val(),'field':field, 'program':program,'alt_email':$("#alt_email").val(),
+                            'student_id':student_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+        });
+        
+
+        $(document).on("click", "#addFacad", function () {
+            var facad_status = $("#facadStatus").val();
+            var facad_id = $("#facadID").val();
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const student_id = urlParams.get('student_id');
+            if(!!facad_id && !!facad_status){
+                $.ajax({
+                    url: "/addFacad",
+                    method: "POST",
+                    data: {'facad_id':facad_id,'student_id':student_id,'status':facad_status},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        $("#facadStatus").selectpicker("refresh");
+                        $("#facadID").selectpicker("refresh");
+                        getFacadData();
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+        });
+    
+    });
+</script>
+{% endblock content %}

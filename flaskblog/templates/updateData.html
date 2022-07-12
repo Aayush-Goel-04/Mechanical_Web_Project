@@ -1,0 +1,398 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="snackbar"></div>
+<div style="text-align: center; margin-left:15%; margin-right:15%; margin-bottom:5%">
+    <h1 id="updateh1" onclick="hide_update_data('update_data')"><b>Update Data </b><i class="fa fa-angle-down" style="font-size:36px; float:left;"></i></h1>
+    <div id="update_data">
+        <p style="color:red;">** [ Upload only .xlsx file format ]</p>
+
+        <h3><b>Upload Course Data</b></h3>
+        <form action="/uploadCourseData" enctype="multipart/form-data" method="POST">
+            <input type="file"  name="course_file" accept=".xlsx">
+            <input type="submit" value="upload" >
+        </form>
+        <hr>
+        <h3><b>Upload Faculty Data</b></h3>
+        <form action="/uploadFacultyData" enctype="multipart/form-data" method="POST">
+            <input type="file" name="faculty_file" accept=".xlsx">
+            <input type="submit" value="upload">
+        </form>
+        <hr>
+        <h3><b>Upload Student Data</b></h3>
+        <p style="color:red;">** [ Ensure Semester for atleast 6 coming years have been created ]</p>
+        <br>
+        <form action="/uploadStudentData" enctype="multipart/form-data" method="POST">
+            <div class="form-group col-md-12">
+                <div class="form-group col-md-4">
+                    <label for="semester">Semester for which Data is Uploaded</label>
+                    <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                        <option value=""> -- Select --</option>
+                        {% for semester in semesters %}
+                        <option value="{{semester.id}}">{{semester.semester}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-md-2"></div>
+                <div class="form-group col-md-6">
+                    <label for="student_file">Select Excel File to Upload</label>
+                    <input type="file" name="student_file" accept=".xlsx">
+                </div>
+            </div>
+            <input type="submit" value="upload">
+        </form>
+    </div>
+
+    <h1 id="updateh1" onclick="hide_update_data('sem_data')"><b>Semester Data </b><i class="fa fa-angle-down" style="font-size:36px; float:left;"></i></h1>
+    <div id="sem_data">
+        <div class="row justify-content-md-center">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <label for="semesterData">Select Semester to Make Changes</label>
+                <select name="semesterData" data-live-search="true" id="semesterData" class="form-control" title="Select Semester">
+                    <option value=""> -- Select --</option>
+                    {% for semester in semesters %}
+                    <option value="{{semester.id}}">{{semester.semester}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4" style="float:right;">
+                <form action="/createNewSemester">
+                    <input type="submit" value="Create New Year" class="btn btn-success btn-lg" />
+                </form>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6" id="mandatoryCourse">
+                    <h3>Mandatory Courses </h3>
+                    <div class="col-md-12" style="margin-bottom:10px;"> 
+                        <label for="course">Select Course to mark Mandatory</label>
+                        <select name="course" data-live-search="true" id="course" class="form-control" title="Select Faculty"> 
+                        </select>
+                        <button id="courseMarkMandatory" type="button" style="margin-top: 10px;" class="btn btn-primary">Mark Mandatory</button>
+                    </div>
+                    <table class="table table-bordered sortable">
+                        <thead>
+                            <tr>
+                                <th>Sno.</th>
+                                <th>Course</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mandatory_courses_table">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6" id="facultyLeave">
+                    <h3>Faculty on Leave </h3>
+                    <div class="col-md-12" style="margin-bottom:10px;"> 
+                        <label for="faculty">Select Faculty to Mark Inactive</label>
+                        <select name="faculty" data-live-search="true" id="faculty" class="form-control" title="Select Faculty"> 
+                        </select>
+                        <button id="facultyMarkInactive" type="button" style="margin-top: 10px;" class="btn btn-primary">Mark Inactive</button>
+                    </div>
+                    <table class="table table-bordered sortable">
+                        <thead>
+                            <tr>
+                                <th>Sno.</th>
+                                <th>Faculty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faculty_leaves_table">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1 id="updateh1" onclick="hide_update_data('coordinator_data')"><b>Assign Coordinators </b><i class="fa fa-angle-down" style="font-size:36px; float:left;"></i></h1>
+    <div id="coordinator_data">
+        <div class="row justify-content-md-center">
+            <div class="col-md-6">
+                <select name="subfield" data-live-search="true" id="subfield" class="form-control" title="Select Field">
+                    <option value=""> -- Select --</option>
+                    {% for field in fields %}
+                    <option value="{{field}}">{{field}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <select name="coordinator" data-live-search="true" id="coordinator" class="form-control" title="Select Faculty">
+                    <option value=""> -- Select --</option>
+                    {% for faculty in facultys %}
+                        <option value="{{faculty.id}}">{{faculty.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button id="addCoordinator" type="button" style="margin-top: 10px;" class="btn btn-primary">Assign</button>
+        </div><br>
+        <table class="table table-bordered sortable">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Faculty Name</th>
+                    <th>Ldap</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody id="coordinator_table">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+<script>
+    function hide_update_data(hide_id) {
+      var x = document.getElementById(hide_id);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+
+    function get_mandatory_courses(semester_id) {
+        $.ajax({
+            url: "/semesterData_2",
+            method: "POST",
+            data: {'semester_id':semester_id},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                courses = resp.courses;
+                const rows = document.getElementById('mandatory_courses_table');
+                rows.innerHTML = "";
+                for(let i=0 ; i<courses.length ; i++){
+                    var row = rows.insertRow(i);
+                    row.insertCell(0).innerHTML = i+1;
+                    row.insertCell(1).innerHTML = '<a href="{{ url_for("courseData",course_id='+courses[i]["course_id"]+')}}">'+courses[i]["course"]+'</a>';
+                    row.insertCell(2).innerHTML = '<button type="button" onclick="removeMandatoryCourse('+ courses[i]["id"]+','+semester_id+');" class="btn btn-primary btn-sm">Remove</button>';
+                }
+            },
+        });
+    }
+
+    function removeMandatoryCourse(course_semester_id, semester_id) {
+        let text = "Do you want to remove this Course from this list ?";
+        if (confirm(text) == true) {
+            $.ajax({
+                url: "/removeMandatoryCourse",
+                method: "POST",
+                data: {'course_semester_id':course_semester_id,'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    get_mandatory_courses(semester_id);
+                    if(typeof resp.message != 'undefined'){
+                        var x = document.getElementById("snackbar");
+                        x.className = "show";
+                        var html = '';
+                        html += '<p>'+resp.message+'</p>'
+                        $("#snackbar").html(html);
+                        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                    }
+                },
+            });
+        }
+    }
+
+    function get_faculty_leaves(semester_id) {
+        $.ajax({
+            url: "/semesterData_2",
+            method: "POST",
+            data: {'semester_id':semester_id},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                facultys = resp.facultys;
+                const rows = document.getElementById('faculty_leaves_table');
+                rows.innerHTML = "";
+                for(let i=0 ; i<facultys.length ; i++){
+                    var row = rows.insertRow(i);
+                    row.insertCell(0).innerHTML = i+1;
+                    row.insertCell(1).innerHTML = '<a href="{{ url_for("facultyData",faculty_id='+facultys[i]["faculty_id"]+')}}">'+facultys[i]["name"]+'</a>';
+                    row.insertCell(2).innerHTML = '<button type="button" onclick="removeFacultyLeave('+ facultys[i]["id"] +','+semester_id+');"class="btn btn-primary btn-sm">Remove</button>';
+                }
+            },
+        });
+    }
+
+    function removeFacultyLeave(faculty_semester_id, semester_id) {
+        let text = "Do you want to remove this Faculty from Inactive List ?";
+        if (confirm(text) == true) {
+            $.ajax({
+                url: "/removeFacultyLeave",
+                method: "POST",
+                data: {'faculty_semester_id':faculty_semester_id,'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    get_faculty_leaves(semester_id);
+                    if(typeof resp.message != 'undefined'){
+                        var x = document.getElementById("snackbar");
+                        x.className = "show";
+                        var html = '';
+                        html += '<p>'+resp.message+'</p>'
+                        $("#snackbar").html(html);
+                        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                    }
+                },
+            });
+        }
+    }
+    
+    function get_coordinators_table() {
+        $.ajax({
+                url: "/coordinatorData",
+                method: "POST",
+                data: {},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    console.log(resp.coordinators);
+                    coordinators = resp.coordinators
+                    const rows = document.getElementById('coordinator_table');
+                    rows.innerHTML = "";
+                    for(let i=0 ; i<coordinators.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = coordinators[i]['field']
+                        row.insertCell(1).innerHTML = '<a href="{{ url_for("facultyData",faculty_id='+coordinators[i]["id"]+')}}">'+coordinators[i]["name"]+'</a>';
+                        row.insertCell(2).innerHTML = coordinators[i]['ldap']
+                        row.insertCell(3).innerHTML = coordinators[i]['role']
+                        row.insertCell(4).innerHTML = '<button type="button" onclick="removeCoordinator('+coordinators[i]['id']+');"class="btn btn-primary btn-sm">Remove</button>';
+                    }
+                }
+        });
+    }
+
+    function removeCoordinator(faculty_id) {
+        let text = "Do you want to remove the assigned coordinator ?";
+        if (confirm(text) == true) {
+            $.ajax({
+                url: "/removeCoordinator",
+                method: "POST",
+                data: {'faculty_id':faculty_id},
+                //dataType: "json",
+                success: function () { //alert(category_id)
+                    get_coordinators_table();
+                },
+            });
+        }
+    }
+
+
+
+    $(document).ready(function () {
+        $("#semesterData").selectpicker();
+        $("#semester").selectpicker();
+        $("#course").selectpicker();
+        $("#faculty").selectpicker();
+        $("#subfield").selectpicker();
+        $("#coordinator").selectpicker();
+        
+        get_coordinators_table();
+
+        $(document).on("change", "#semesterData", function () {
+            var semester_id = $("#semesterData").val();
+            if (!!semester_id){
+                get_faculty_leaves(semester_id);
+                get_mandatory_courses(semester_id);
+                $.ajax({
+                    url: "/semesterData_1",
+                    method: "POST",
+                    data: {},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        var html1 = '';
+                        html1 += '<option value=""> -- Select -- </option>';
+                        for (var j = 0; j < resp.courses.length; j++) {
+                            html1 += '<option value="' + resp.courses[j].id + '">' + resp.courses[j].name + "</option>";
+                        }
+                        $("#course").html(html1);
+                        $("#course").selectpicker("refresh");
+                        var html2 = '';
+                        html2 += '<option value=""> -- Select -- </option>';
+                        for (var j = 0; j < resp.facultys.length; j++) {
+                            html2 += '<option value="' + resp.facultys[j].id + '">' + resp.facultys[j].name + "</option>";
+                        }
+                        $("#faculty").html(html2);
+                        $("#faculty").selectpicker("refresh");
+                    },
+                });
+            }
+        });
+
+        $(document).on("click", "#courseMarkMandatory", function () {
+            var course_id = $("#course").val();
+            var semester_id = $("#semesterData").val();
+            if(!!course_id && !!semester_id){
+                $.ajax({
+                    url: "/courseMarkMandatory",
+                    method: "POST",
+                    data: {'course_id':course_id,'semester_id':semester_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        get_mandatory_courses(semester_id);
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    }
+                });
+            }
+        });
+
+        $(document).on("click", "#facultyMarkInactive", function () {
+            var faculty_id = $("#faculty").val();
+            var semester_id = $("#semesterData").val();
+            if(!!faculty_id && !!semester_id){
+                $.ajax({
+                    url: "/facultyMarkInactive",
+                    method: "POST",
+                    data: {'faculty_id':faculty_id,'semester_id':semester_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        get_faculty_leaves(semester_id);
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    }
+                });
+            }
+        });
+    
+        $(document).on("click", "#addCoordinator", function () {
+            var subfield = $("#subfield").val();
+            var faculty_id = $("#coordinator").val();
+            console.log(subfield,faculty_id);
+            if(!!subfield && !!faculty_id){
+                $.ajax({
+                    url: "/addCoordinator",
+                    method: "POST",
+                    data: {'faculty_id':faculty_id,'subfield':subfield},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        get_coordinators_table();
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock content %}

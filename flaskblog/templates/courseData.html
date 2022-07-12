@@ -1,0 +1,44 @@
+{%extends "layout.html" %}
+{% block content %}
+<div style="width: 70%; margin: 2% 15% 2%;">
+    <div class="col-md-12">
+        <div class="col-md-4">
+            <h4><b>Code</b> : {{course.code}}</h4>
+        </div>
+        <div class="col-md-4">
+            <h4><b>Name</b> : {{course.name}}</h4>
+        </div>
+        <div class="col-md-4">
+            <h4><b>Field</b> : {{course.field}}</h4>
+        </div><hr><br>
+    </div>
+
+    <h2 style="text-align: center;"><b> Course Allotments </b></h2>
+    <table class="table table-bordered">
+        <tbody>
+            {% for semester in course.semesters[::-1] %}
+            <tr><td colspan="3">&nbsp;</td></tr>
+            <tr>
+                <td colspan="3">
+                    <b style=" margin-left:40%; font-size:large;">{{ semester.semester }}</b>
+                    {% if semester.status %}
+                        <p style="float:right; font-size: medium;"><b>is_mandatory</p>
+                    {% endif %}
+                </td>
+            </tr>
+                {% for section in semester.sections %}
+                <tr>
+                    <td>{{section.section}}</td>
+                    <td><a href="{{ url_for('facultyData',faculty_id=section.faculty_id)}}">{{section.faculty}}</a></td>
+                    <td>
+                    {% for ta in section.tas %}
+                        <a href="{{ url_for('studentData',student_id = ta.student_id)}}">{{ta.name}}</a><br>
+                    {% endfor %}
+                    </td>
+                </tr>
+                {% endfor%}
+            {% endfor%}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

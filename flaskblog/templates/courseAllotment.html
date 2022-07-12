@@ -1,0 +1,293 @@
+{%extends "layout.html" %}
+{% block content %}
+<div id="snackbar">
+</div>
+    <div class="split1">
+        <h3 style="text-align:center;"><b>Course Allotments</b></h3>
+        <div class="row" >
+            <div class="col-md-6">
+                <label>Select Semester</label>
+                <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                    {% for semester in semesters %}
+                    <option value="{{semester.id}}">{{semester.semester}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Select Course</label>
+                <select name="course" data-live-search="true" id="course" class="form-control" title="Select Course">
+                </select>
+            </div>
+        </div>
+        <br>
+        <div id="get_alloted_sections">
+        </div><br>
+
+        <form id="add_sections" style="display: none">
+            <label for="quantity">Select number of sections to be added:</label>
+            <input type="number" id="quantity" name="num_sections" min="1" max="100">
+            <button type="submit" class="btn btn-default">Add</button>
+        </form>
+        <div class="row" id="faculty_section">
+        </div><br>
+        <table class="table table-sm table-bordered sortable" id="prev_allot_table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Faculty Ldap</th>
+                    <th>Allotments</th>
+                </tr>
+            </thead>
+            <tbody id="previous_allotments">
+            </tbody>
+        </table>
+        <hr>
+        <h3 style="text-align:center;">Mandatory Courses</h3><br>
+        <table class="table table-sm table-bordered sortable">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Course</th>
+                    <th>Alloted</th>
+                </tr>
+            </thead>
+            <tbody id="mandatory_course_rows">
+            </tbody>
+        </table>
+        <hr>
+    </div>
+    
+    <div class="split2">
+        <h3 style="text-align:center;"><b>Allotments Table</b></h3>
+        <table class="table table-sm table-bordered sortable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Field</th>
+                    <th>Course</th>
+                    <th>Section</th>
+                    <th>Professor</th>
+                    <th>MaxTAs</th>
+                </tr>
+            </thead>
+            <tbody id="course_fac_rows">
+            </tbody>
+        </table>
+        <hr>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+    
+    <script>
+        // Removing Course Alloment By passing The id of Course_Faculty
+        function removeCourseAllotment(course_faculty_id, semester_id) {
+            var course_id = $("#course").val();
+            let text = "Do you want to remove the allotment made ?";
+            if (confirm(text) == true) {
+                $.ajax({
+                        url: "/removeCourseAllotment",
+                        method: "POST",
+                        data: {'course_faculty_id':course_faculty_id,'semester_id':semester_id},
+                        //dataType: "json",
+                        success: function (resp) { //alert(category_id)
+                            generate_course_tables(semester_id);
+                            get_alloted_sections(course_id,semester_id);
+                            if(typeof resp.message != 'undefined'){
+                                var x = document.getElementById("snackbar");
+                                x.className = "show";
+                                var html = '';
+                                html += '<p>'+resp.message+'</p>'
+                                $("#snackbar").html(html);
+                                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                            }
+                        },
+                    });
+            }
+        }
+
+        function generate_course_tables(semester_id) {
+            $.ajax({
+                url: "/get_course_allotments",
+                method: "POST",
+                data: {'semester_id':semester_id},
+                //dataType: "json",
+                success: function (response) { //alert(category_id)
+                    fac_list = response.fac_list
+                    const faculty_rows = document.getElementById('course_fac_rows');
+                    faculty_rows.innerHTML = ""
+                    for(let i=0 ; i<fac_list.length ; i++){
+                        var fac_row = faculty_rows.insertRow(i);
+                        fac_row.insertCell(0).innerHTML = i+1;
+                        fac_row.insertCell(1).innerHTML = fac_list[i]["field"];
+                        fac_row.insertCell(2).innerHTML = fac_list[i]["course"];
+                        fac_row.insertCell(3).innerHTML = fac_list[i]["section"];
+                        fac_row.insertCell(4).innerHTML = fac_list[i]["professor"];
+                        fac_row.insertCell(5).innerHTML = fac_list[i]["maxTA"];
+                        fac_row.insertCell(6).innerHTML = '<button onclick="removeCourseAllotment('+ fac_list[i]["id"]+','+semester_id +');">Remove</button>';
+                    }
+                    course_list = response.course_list;
+                    const rows = document.getElementById('mandatory_course_rows');
+                    rows.innerHTML = ""
+                    for(let i=0 ; i<course_list.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = course_list[i]["field"];
+                        row.insertCell(1).innerHTML = course_list[i]["course"];
+                        if( course_list[i]["allotments"] > 0){
+                            row.insertCell(2).innerHTML = course_list[i]["allotments"];
+                            row.insertCell(3).innerHTML = '<span style="color:green;">&#10003</span>';
+                        }else{
+                            row.insertCell(2).innerHTML = '';
+                            row.insertCell(3).innerHTML = '';
+                        }
+                    }
+                },
+            });
+        }
+
+
+        $(document).ready(function () {
+            $("#semester").selectpicker();
+            $("#course").selectpicker();
+
+            var sections;
+            function get_alloted_sections(course_id,semester_id) {
+                $.ajax({
+                    url: "/get_alloted_sections",
+                    method: "POST",
+                    data: {'course_id': course_id,'semester_id':semester_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        course_sections = resp.course_sections;
+                        var html = "";
+                        for (var i = 0; i < course_sections.length; i++) {
+                            html += 'Section - '+course_sections[i].section+' has been alloted to Professor - '+course_sections[i].prof+' | MaxTAs :'+course_sections[i].maxTA+' </br>';
+                        }
+                        $("#get_alloted_sections").html(html);
+                        prev_allot = resp.previous_allotments
+                        const rows = document.getElementById('previous_allotments');
+                        rows.innerHTML = "";
+                        for (let [key, value] of Object.entries(prev_allot)){
+                            var row = rows.insertRow(-1);
+                            row.insertCell(0).innerHTML = key;
+                            row.insertCell(1).innerHTML = value;
+                        }
+                        $("#prev_allot_table").show();
+                        $("#add_sections").show();
+                    },
+                });
+            }
+
+            function get_courses() {
+                $.ajax({
+                    url: "/get_courses",
+                    method: "POST",
+                    data: {},
+                    //dataType: "json",
+                    success: function (courses) { //alert(category_id)
+                        var html = "";
+                        for (var count = 0; count < courses.length; count++) {
+                            html += '<option value="' + courses[count].id + '">' + courses[count].name + "</option>";
+                        }
+                        $("#course").html(html);
+                        $("#course").selectpicker("refresh");
+                    },
+                });
+            }
+            
+            $(document).on("change", "#semester", function () {
+                var semester_id = $("#semester").val();
+                get_courses();
+                // Add Code to reset get_alloted_sections and add_sections
+                $("#add_sections").hide();
+                $("#get_alloted_sections").html('');
+                $("#prev_allot_table").hide();
+                $("#faculty_section").html("");
+                generate_course_tables(semester_id);
+            });
+
+            $(document).on("change", "#course", function () {
+                var semester_id = $("#semester").val();
+                var course_id = $("#course").val();
+                get_alloted_sections(course_id,semester_id);
+                // Add Code to reset faculty dropdown
+                $("#faculty_section").html("");
+            });
+
+            $("#add_sections").on('submit', function (e) {
+                e.preventDefault();
+                var semester_id = $("#semester").val();
+                var course_id = $("#course").val();
+                var num_sections = $("#quantity").val();
+                if (!!num_sections){
+                    $.ajax({
+                        url: "/get_sections_and_faculty",
+                        method: "POST",
+                        data: {'course_id': course_id,'semester_id':semester_id,'num_sections':num_sections},
+                        //dataType: "json",
+                        success: function (resp) { //alert(category_id)
+                            var html = '<br>';
+                            sections = resp.sections
+                            for (var i = 0; i < resp.sections.length; i++) {
+                                html += '<div class="col-md-12"> ';
+                                    html += '<div class="col-md-6"> ';
+                                        html += '<label for="faculty'+ resp.sections[i] +'">Select faculty for '+ resp.sections[i] +'</label>';
+                                        html += '<select name="faculty'+resp.sections[i]+'" data-live-search="true" id="faculty'+resp.sections[i]+ '" class="form-control" title="Faculty for '+ resp.sections[i] +'"> ';
+                                            for (var j = 0; j < resp.profs.length; j++) {
+                                            html += '<option value="'+resp.profs[j]['id']+'"> '+resp.profs[j]['name']+"</option>";
+                                            }
+                                        html += '</select>';
+                                    html += ' </div>';
+                                    html += '<div class="col-md-6"> ';
+                                        html += '<label for="maxTA'+resp.sections[i]+'">Number of TAs for '+resp.sections[i]+' : </label><br>';
+                                        html += '<input type="number" id="maxTA'+resp.sections[i]+'" name="maxTA'+resp.sections[i]+'" min="1" max="30">';
+                                    html += ' </div>';
+                                html += ' </div>';
+                            }
+                            html += '<button id = "btnSubmit" type="button" style="margin-left: 45%; margin-top:1%;" class="btn btn-primary">Submit</button>';
+                            $("#faculty_section").html(html);
+                            $("#add_sections").show();
+                            for (var i = 0; i < resp.sections.length; i++) {
+                                $("#faculty"+resp.sections[i]).selectpicker();
+                            }
+                        },
+                    });
+                }
+            });
+
+            $(document).on("click", "#btnSubmit", function () {
+                section_faculty_list = [];
+                for (var i = 0; i < sections.length; i++) {
+                    var fac_id = $("#faculty"+sections[i]).val();
+                    var maxTA = $("#maxTA"+sections[i]).val();
+                    section_faculty_list.push({'section':sections[i],'faculty_id':fac_id,'maxTA':maxTA})
+                }
+                var course_id = $("#course").val();
+                var semester_id = $("#semester").val();
+                $.ajax({
+                    url: "/allot_section_fac",
+                    method: "POST",
+                    data: {'section_faculty_list': JSON.stringify(section_faculty_list),'course_id':course_id,'semester_id':semester_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        generate_course_tables(semester_id);
+                        get_alloted_sections(course_id, semester_id);
+                        $("#faculty_section").html("");
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });//stop form submission
+            });
+
+        });
+
+   </script>
+{% endblock content %}

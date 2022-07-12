@@ -1,0 +1,90 @@
+{%extends "layout.html" %}
+{% block Table %}
+<h1 style="text-align:center;"><b>Course table</b></h1>
+<div style="width: 98%; margin-left:1%; ">
+    <div class="col-md-12">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <label for="semester">Select Semester to fetch Data</label>
+            <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                {% for semester in semesters %}
+                <option value="{{semester.id}}">{{semester.semester}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <form action="/findCourse">
+                <div class="row">
+                    <label for="course"> Search Course </label>
+                    <select name="course" data-live-search="true" id="course" class="form-control" title="Select Course">
+                        {% for course in courses %}
+                        <option value="{{course.id}}">{{course.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                    <button type="submit" class="btn btn-primary">Get Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Field</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Teaching</th>
+                <th>is_mandatory</th>
+            </tr>
+        </thead>
+        <tbody id="course_rows">
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+    
+    $(document).ready(function () {
+        $("#semester").selectpicker();
+        $("#course").selectpicker();
+
+        function get_course_list(semester_id) {
+            $.ajax({
+                url: "/get_course_list",
+                method: "POST",
+                data: {'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    courses = resp.courses;
+                    const rows = document.getElementById('course_rows');
+                    rows.innerHTML = "";
+                    for(let i=0 ; i<courses.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = i+1;
+                        row.insertCell(1).innerHTML = courses[i]['field'];
+                        row.insertCell(2).innerHTML = '<a href="{{url_for("courseData", course_id="")}}'+courses[i]["id"]+'">'+courses[i]["code"]+'</a>';
+                        row.insertCell(3).innerHTML = courses[i]['name'];
+                        var html = '';
+                        sections = courses[i]["instructors"]
+                        for(let j=0 ; j<sections.length ; j++){
+                            html += '<p><b>'+sections[j]["section"]+' - </b><a href="{{url_for("facultyData", faculty_id="")}}'+sections[j]["faculty_id"]+'">'+sections[j]["name"]+'</a> | <b>TAs : </b>'+sections[j]["TA"]+'</p>';
+                        }
+                        row.insertCell(4).innerHTML = html;
+                        row.insertCell(5).innerHTML = courses[i]['is_mandatory'];
+                    }
+                },
+            });
+        }
+        $(document).on("change", "#semester", function () {
+            var semester_id = $("#semester").val();
+            get_course_list(semester_id);
+        });
+    });
+</script>
+{% endblock Table %}
