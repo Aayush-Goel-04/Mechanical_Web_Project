@@ -16,8 +16,3 @@ To run this project on your local machine, please follow these steps:
 ## Features
 
 The website has the following features:
-
-- Responsive design that adapts to different screen sizes.
-- Home page that displays information about the company and its products.
-- Product page that shows details about each product.
-- Contact page with a form for users to send inquiries to the company.
