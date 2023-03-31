@@ -1,4 +1,3 @@
-
 # WebProject
 
 This is a simple web project that was created for learning purposes. The website displays information about a web portal for department databse management. 
