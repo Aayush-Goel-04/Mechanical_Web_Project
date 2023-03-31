@@ -1,6 +1,6 @@
 # WebProject
 
-This is a simple web project that was created for learning purposes. The website displays information about a web portal for department databse management. 
+This is a simple web project that was created as a learning project and is currently being used to as a web portal for Mechanical Department databse management.. 
 It has been developed using HTML, CSS, JavaScript and uses FLASK a python framework.For database SQLAlchemy has been used.
 
 ## Getting Started
