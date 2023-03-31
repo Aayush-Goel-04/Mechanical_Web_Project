@@ -7,7 +7,8 @@ You are readuy to start the webportal
 Run "" python testbed/run_server.py""
 # WebProject
 
-This is a simple web project that was created for learning purposes. The website displays information about a fictional company and its products. It has been developed using HTML, CSS, and JavaScript.
+This is a simple web project that was created for learning purposes. The website displays information about a web portal for department databse management. 
+It has been developed using HTML, CSS, JavaScript and uses FLASK a python framework.For database SQLAlchemy has been used.
 
 ## Getting Started
 
