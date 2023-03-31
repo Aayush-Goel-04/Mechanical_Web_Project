@@ -1,0 +1,390 @@
+{%extends "layout.html" %}
+{% block Table %}
+<div id="snackbar"></div>
+
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <h3 style="text-align:center;"><b>Edit Faculty Data</b></h1>
+        <p id="f_data" style="text-align:center"></p>
+        <div class="row">
+            {% if current_user.role == 'admin' %}
+            <div class="form-group col-md-12">
+                <div class="form-group col-md-4">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" class="form-control">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="ldap">Ldap</label>
+                    <input type="text" id="ldap" class="form-control">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="field">Field</label>
+                    <select name="field" data-live-search="true" id="field" class="form-control" title="Select Field">
+                        {% for field in fields %}
+                            <option value="{{ field }}">{{ field }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <br>
+            <div class="form-group col-md-12">
+                <div class="form-group col-md-6">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="phone">Phone Number (If None => NA)</label>
+                    <input type="tel" id="phone" class="form-control">
+                </div>
+            </div>
+            <br>
+            <input type="submit" id="cancel" value="Cancel" class="btn btn-danger" style="margin: 4% 2% 2%;">
+            <input type="submit" id="save" value="Save Changes" class="btn btn-success" style="margin: 4% 2% 2%;">
+            {% else %}
+                <p style="text-align:center"> You don't have the permission to edit Faculty data.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="facModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <h3 style="text-align:center;"><b>Re-register a Faculty</b></h1>
+        <form action="/activateFaculty">
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <div class="form-group col-md-4"></div>
+                    <div class="form-group col-md-4">
+                        <div class="row">
+                            <label for="faculty_name"> Search faculty </label>
+                            <select name="faculty_name" id="faculty_name" data-live-search="true" required class="form-control" title="Select Faculty">
+                                {% for faculty in facultys %}
+                                <option value="{{faculty.id}}">{{faculty.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                            <button type="submit" class="btn btn-primary">Activate Faculty</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <br>
+
+        <h3 style="text-align:center;"><b>Add New Faculty Data</b></h1>
+        <p id="f_data" style="text-align:center"></p>
+        <div class="row">
+            {% if current_user.role == 'admin' %}
+            <div class="form-group col-md-12">
+                <div class="form-group col-md-4">
+                    <label for="f_name">Name</label>
+                    <input type="text" id="f_name" class="form-control">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="f_ldap">Ldap</label>
+                    <input type="text" id="f_ldap" class="form-control">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="f_field">Field</label>
+                    <select name="f_field" data-live-search="true" id="f_field" class="form-control" title="Select Field">
+                        {% for field in fields %}
+                            <option value="{{ field }}">{{ field }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <br>
+            <div class="form-group col-md-12">
+                <div class="form-group col-md-6">
+                    <label for="f_email">Email</label>
+                    <input type="email" id="f_email" class="form-control">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="f_phone">Phone Number (If None => NA)</label>
+                    <input type="tel" id="f_phone" class="form-control">
+                </div>
+            </div>
+            <br>
+            <input type="submit" id="f_cancel" value="Cancel" class="btn btn-danger" style="margin: 4% 2% 2%;">
+            <input type="submit" id="f_save" value="Save Changes" class="btn btn-success" style="margin: 4% 2% 2%;">
+            {% else %}
+                <p style="text-align:center"> You don't have the permission to add a new faculty.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h1 style="text-align:center;"><b>Faculty Table</b></h1>
+<div style="width: 98%; margin-left:1%; ">
+    <div class="col-md-12">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <label for="semester">Select semester to fetch data</label>
+            <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                {% for semester in semesters %}
+                <option value="{{semester.id}}">{{semester.semester}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            {% if current_user.role == 'admin' %}
+            <label>Add New Faculty </label>
+            <button type="button" onclick="addFaculty()" class="btn btn-primary">Add Faculty</button>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <form action="/findFaculty" target="_blank">
+                <div class="row">
+                    <label for="faculty"> Search faculty </label>
+                    <select name="faculty" data-live-search="true" required id="faculty" class="form-control" title="Select Faculty">
+                        {% for faculty in facultys %}
+                        <option value="{{faculty.id}}">{{faculty.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Ldap</th>
+                <th>Email</th>
+                <th>Phone number</th>
+                <th>Field</th>
+                <th></th>
+                <th>Coord</th>
+                <th>Courses</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="faculty_rows">
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+
+    function get_faculty_list(semester_id) {
+        $.ajax({
+            url: "/get_faculty_list",
+            method: "POST",
+            data: {'semester_id':semester_id},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                facultys = resp.facultys;
+                const rows = document.getElementById('faculty_rows');
+                rows.innerHTML = "";
+                for(let i=0 ; i<facultys.length ; i++){
+                    var row = rows.insertRow(i);
+                    row.insertCell(0).innerHTML = i+1;
+                    row.insertCell(1).innerHTML = '<a target="_blank" id="name_'+facultys[i]["id"]+'"\
+                                        href="{{url_for("facultyData", faculty_id="")}}'+
+                                        facultys[i]["id"]+'">'+facultys[i]["name"]+'</a>';
+                    row.insertCell(2).innerHTML = '<span id="ldap_'+facultys[i]["id"]+'">'+facultys[i]["ldap"]+'</span>';
+                    row.insertCell(3).innerHTML = '<span id="email_'+facultys[i]["id"]+'">'+facultys[i]["email"]+'</span>';
+                    row.insertCell(4).innerHTML = '<span id="phone_'+facultys[i]["id"]+'">'+facultys[i]["phone_number"]+'</span>';
+                    row.insertCell(5).innerHTML = '<span id="field_'+facultys[i]["id"]+'">'+facultys[i]["field"]+'</span>';
+                    if (resp.admin == true){
+                        row.insertCell(6).innerHTML = '<button id="editData" data-id="'+facultys[i]["id"]+'">\
+                                                <i class="fa fa-pencil-square-o"></i></button>';
+                    }else{
+                        row.insertCell(6).innerHTML = '';
+                    }
+                    row.insertCell(7).innerHTML = facultys[i]['coord'];
+                    var html = '';
+                    for(let j=0 ; j<facultys[i]["courses"].length ; j++){
+                        html += '<p>'+facultys[i]["courses"][j]["section"]+' - \
+                                <a href="{{url_for("courseData", course_id="")}}\
+                                '+facultys[i]["courses"][j]["id"]+'">\
+                                '+facultys[i]["courses"][j]["name"]+'</a></p>';
+                    }
+                    row.insertCell(8).innerHTML = html;
+                    row.insertCell(9).innerHTML = facultys[i]["status"];
+                    if (resp.admin == true){
+                        row.insertCell(10).innerHTML = '<button type="button" onclick="changeStatus('+facultys[i]["id"]+')">\
+                                                    Make Inactive </button>';
+                    }
+                }
+            },
+        });
+    }
+
+    function addFaculty() {
+        var modal = document.getElementById("facModal");
+        modal.style.display = "block";
+
+        var cancel = document.getElementById("f_cancel");
+        var save = document.getElementById("f_save");
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        save.onclick = function() {
+            var name = $("#f_name").val();
+            var ldap = $("#f_ldap").val();
+            var email = $("#f_email").val();
+            var field = $("#f_field").val();
+            var phone = $("#f_phone").val();
+            if(!(!!name && !!ldap && !!email && !!field && !!phone)){
+                alert('All fields must be specified !');
+            }else{
+                modal.style.display = "none";
+                $.ajax({
+                    url: "/addNewFaculty",
+                    method: "POST",
+                    data: {'name':name,'ldap':ldap,
+                            'email':email,'field':field,
+                            'phone_number':phone},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        if(resp.key == true){
+                            var semester_id = $("#semester").val();
+                            if(!!semester_id) get_faculty_list(semester_id);
+                        }
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+        }
+        cancel.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    function changeStatus(faculty_id){
+        alert("Do you want to change Faculty Status ?")
+        var text = 'Are you sure you want to change Faculty Status ?'
+        if(!!faculty_id && confirm(text)==true){
+            $.ajax({
+            url: "/changeFacultyStatus",
+            method: "POST",
+            data: {'faculty_id':faculty_id},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                if(resp.key == true){
+                    var semester_id = $("#semester").val();
+                    if(!!semester_id) get_faculty_list(semester_id);
+                }
+                if(typeof resp.message != 'undefined'){
+                    var x = document.getElementById("snackbar");
+                    x.className = "show";
+                    var html = '';
+                    html += '<p>'+resp.message+'</p>'
+                    $("#snackbar").html(html);
+                    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                }
+            },
+        });
+        }
+    }
+
+    $(document).ready(function () {
+        $("#semester").selectpicker();
+        $("#faculty").selectpicker();
+        $("#faculty_name").selectpicker();
+        $("#field").selectpicker();
+        $("#f_field").selectpicker();
+
+        $(document).on("change", "#semester", function () {
+            var semester_id = $("#semester").val();
+            get_faculty_list(semester_id);
+        });
+
+        $(document).on("click", "#editData", function (event) {
+            if($(this).children("input").length > 0) return false;
+            var f_id = $(this).data('id');
+
+            var modal = document.getElementById("myModal");
+            modal.style.display = "block";
+            // name ldap email field phone
+            var f_data = document.getElementById("f_data");
+
+            var name = document.getElementById("name_"+f_id);
+            var ldap = document.getElementById("ldap_"+f_id);
+            var email = document.getElementById("email_"+f_id);
+            var field = document.getElementById("field_"+f_id);
+            var phone = document.getElementById("phone_"+f_id);
+            $("#name").val(name.innerHTML);
+            $("#ldap").val(ldap.innerHTML);
+            $("#field").val(field.innerHTML).selectpicker("refresh");
+            $("#email").val(email.innerHTML);
+            $("#phone").val(phone.innerHTML);
+            var cancel = document.getElementById("cancel");
+            var save = document.getElementById("save");
+            f_data.innerHTML = '<b>Faculty :</b> ' + name.innerHTML + ' | ' +
+                                    ldap.innerHTML + ' | ' +
+                                    email.innerHTML + ' | ' +
+                                    field.innerHTML + ' | ' +
+                                    phone.innerHTML;
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            save.onclick = function() {
+                var new_name = $("#name").val();
+                var new_ldap = $("#ldap").val();
+                var new_email = $("#email").val();
+                var new_field = $("#field").val();
+                var new_phone = $("#phone").val();
+                if(!(!!new_name && !!new_ldap && !!new_email && !!new_field && !!new_phone)){
+                    alert('All fields must be specified !');
+                }else{
+                    modal.style.display = "none";
+                    $.ajax({
+                        url: "/updateFacultyData",
+                        method: "POST",
+                        data: {'name':new_name,'ldap':new_ldap,
+                               'email':new_email,'field':new_field,
+                               'phone_number':new_phone,'faculty_id':f_id},
+                        //dataType: "json",
+                        success: function (resp) { //alert(category_id)
+                            if(resp.key == true){
+                                name.innerHTML  = new_name;
+                                ldap.innerHTML  = new_ldap;
+                                email.innerHTML = new_email;
+                                field.innerHTML = new_field;
+                                phone.innerHTML = new_phone;
+                            }
+                            if(typeof resp.message != 'undefined'){
+                                var x = document.getElementById("snackbar");
+                                x.className = "show";
+                                var html = '';
+                                html += '<p>'+resp.message+'</p>'
+                                $("#snackbar").html(html);
+                                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                            }
+                        },
+                    });
+                }
+            }
+            cancel.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+    });
+</script>
+{% endblock Table %}

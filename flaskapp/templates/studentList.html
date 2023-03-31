@@ -1,0 +1,531 @@
+{%extends "layout.html" %}
+{% block Table %}
+<div id="snackbar"></div>
+
+<div id="exempt_myModal" class="modal">
+    <div class="modal-content1">
+        <h3 style="text-align:center;"><b>Student Exemption</b></h3>
+        <p id="se_name" style="text-align:center;"></p>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <textarea id="exemption_reason" required placeholder="Enter the reason for Exemption"
+                            minlength="1" maxlength="500" rows="3" style="width:70%; margin:auto;" 
+                            class="form-control"></textarea><br>
+                <div class="row" style="margin-top:5px; margin-bottom:5px; margin-left: auto;">
+                    <button type="submit" id="unexempt" class="btn btn-success">Unexempt</button>
+                    <button type="submit" id="exempt" class="btn btn-danger">Exempt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <h3 style="text-align:center;"><b>Re-register a Student</b></h3>
+        <form id="activateStudent">
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <div class="form-group col-md-4"></div>
+                    <div class="form-group col-md-4">
+                        <div class="row">
+                            <label for="student_name"> Search Student </label>
+                            <select name="student_name" id="student_name" required data-live-search="true" required class="form-control" title="Select Student">
+                                {% for student in students %}
+                                <option value="{{student.id}}">{{student.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                            <button type="submit" class="btn btn-primary">Activate Student</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <br>
+
+        <h3 style="text-align:center;"><b>Add Student Data</b></h1>
+        <form id="addStudent">
+            <h2 style="text-align: center;">Add Student/Update Student Data</h2>
+            <div class="row">
+                {% if current_user.role == 'admin' %}
+                <div class="form-group col-md-12">
+                    <div class="form-group col-md-4">
+                        <label for="name_s">Name</label>
+                        <input type="text" id="name_s" required class="form-control">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="roll_number_s">Roll Number</label>
+                        <input type="text" id="roll_number_s" required class="form-control">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="email_s">Email</label>
+                        <input type="email" id="email_s" required class="form-control">
+                    </div>
+                </div>
+                <div class="form-group col-md-12">
+                    <div class="form-group col-md-4">
+                        <label for="program_s">Program</label>
+                        <select name="program_s" data-live-search="true" id="program_s" required class="form-control" title="Select Program">
+                            {% for program in programs %}
+                                <option value="{{ program }}">{{ program }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="field_s">Field</label>
+                        <select name="field_s" data-live-search="true" id="field_s" required class="form-control" title="Select Field">
+                            {% for field in fields %}
+                                <option value="{{ field }}">{{ field }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="category_s">Category</label>
+                        <select name="category_s" data-live-search="true" id="category_s" required class="form-control" title="Select Category">
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <input type="button" id="cancel_s" value="Cancel" class="btn btn-danger" style="margin: 4% 2% 2%;">
+                <input type="submit" id="save_s" value="Add Student" class="btn btn-success" style="margin: 4% 2% 2%;">
+                {% else %}
+                    <p style="text-align:center"> You don't have the permission to edit Faculty data.</p>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<h1 style="text-align:center;"><b>Student Table</b></h1>
+<div style="width: 98%; margin-left:1%; ">
+    <div class="col-md-12">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <label for="semester">Select semester to fetch data</label>
+            <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                {% for semester in semesters %}
+                <option value="{{semester.id}}">{{semester.semester}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <div id="addStudentButton" style="display:none;">
+                {% if current_user.role == 'admin' %}
+                <label>Add New Student</label><br>
+                <button type="button" onclick="show_addStudent()" class="btn btn-primary" style="margin:auto">Add Student</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <form action="/findStudent">
+                <div class="row">
+                    <label for="student"> Search student in all semesters :</label>
+                    <select name="student" data-live-search="true" required id="student" class="form-control" title="Select Student">
+                        {% for student in students %}
+                        <option value="{{student.id}}">{{student.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Roll number</th>
+                <th>Email</th>
+                <th>Program</th>
+                <th>Field</th>
+                <th>Category</th>
+                <th>Edit</th>
+                <th>Phone Number</th>
+                <th>TA Duties</th>
+                <th>Grades</th>
+                <th>Faculty Advisor</th>
+                <th>Acknowledgement</th>
+                <th>Active TA</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="student_rows">
+        </tbody>
+    </table>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+    
+    function show_addStudent() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+
+        var cancel_ = document.getElementById("cancel_s");
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        cancel_.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    $(document).ready(function () {
+        $("#semester").selectpicker();
+        $("#student").selectpicker();
+        $("#student_name").selectpicker();
+        $("#field_s").selectpicker();
+        $("#program_s").selectpicker();
+        $("#category_s").selectpicker();
+
+        function get_student_list(semester_id) {
+            $.ajax({
+                url: "/get_student_list",
+                method: "POST",
+                data: {'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    students = resp.students;
+                    const rows = document.getElementById('student_rows');
+                    rows.innerHTML = "";
+                    if(students.length == 0){
+                        rows.innerHTML = '<td style="text-align:center; font-size:large;" colspan="11"><b>No active students in this semester.</b></td>';
+                    }
+                    for(let i=0 ; i<students.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = i+1;
+                        row.insertCell(1).innerHTML = '<a target="_blank" \
+                                            href="{{url_for("studentData", student_id="")}}'+students[i]["id"]+'">\
+                                            <span id="sn_'+students[i]["id"]+'">'+students[i]["name"]+'</span></a>';
+                        row.insertCell(2).innerHTML = '<span id="sr_'+students[i]["id"]+'">'+students[i]['rollno']+'</span>';
+                        row.insertCell(3).innerHTML = '<span id="se_'+students[i]["id"]+'">'+students[i]['email']+'</span>';
+                        row.insertCell(4).innerHTML = '<span id="sp_'+students[i]["id"]+'">'+students[i]['program']+'</span>';
+                        row.insertCell(5).innerHTML = '<span id="sf_'+students[i]["id"]+'">'+students[i]['field']+'</span>';
+                        row.insertCell(6).innerHTML = '<span id="sc_'+students[i]["id"]+'">'+students[i]['category']+'</span>';
+                        if(resp.admin == true){
+                            row.insertCell(7).innerHTML = '<button id="editStudent" data-id="'+students[i]["id"]+'">\
+                                                                    <i class="fa fa-pencil-square-o"></i></button>';
+                        }else{
+                            row.insertCell(7).innerHTML = '';
+                        }
+                        row.insertCell(8).innerHTML = students[i]['phone_number'];
+                        var html1 = '';
+                        var courses = students[i]["courses"];
+                        for(let j=0 ; j<courses.length ; j++){
+                            html1 += '<p>'+courses[j]["section"]+' - <a href="{{url_for("courseData", course_id="")}}'+courses[j]["id"]+'">'+courses[j]["course"]+'</a></p>';
+                        }
+                        row.insertCell(9).innerHTML = html1;
+                        var grade = students[i]["grade"]
+                        if(grade[0] != 'NA' && grade[1] != 'NA'){
+                            row.insertCell(10).innerHTML = grade[0]+'<br>'+grade[1];
+                        }else{
+                            if(grade[0] == 'NA') grade[0] = ''
+                            if(grade[1] == 'NA') grade[1] = ''
+                            row.insertCell(10).innerHTML = grade[0] +' '+ grade[1];
+                        }
+                        var html2 = '';
+                        var facads = students[i]["facads"];
+                        for(let j=0 ; j<facads.length ; j++){
+                            html2 += '<p>'+facads[j]["status"]+' - <a href="{{url_for("facultyData", faculty_id="")}}'+facads[j]["facad_id"]+'">'+facads[j]["facad"]+'</p>';
+                        }
+                        row.insertCell(11).innerHTML = html2;
+                        row.insertCell(12).innerHTML = students[i]['attendance'];
+                        if( students[i]['active_ta'] == true){
+                            row.insertCell(13).innerHTML = '<span id="exempt_'+students[i]['id']+'" style="color:red;"></span>';
+                        }else{
+                            row.insertCell(13).innerHTML = '<span id="exempt_'+students[i]['id']+'" style="color:red;">&#10060</span>';
+                        }
+                        if(resp.admin == true){
+                            row.insertCell(14).innerHTML = '<button id="editExempt" data-id="'+students[i]["id"]+'"\
+                                                    data-name="'+students[i]["rollno"]+'" data-reason="'+students[i]["reason"]+'">Exempt</button>';
+                            row.insertCell(15).innerHTML = '<button id="editStatus" data-id="'+students[i]["id"]+'"\
+                                                    data-name="'+students[i]["rollno"]+'">De-Register</button>';
+                        }
+                    }
+                },
+            });
+        }
+        
+        $(document).on("change", "#semester", function () {
+            var semester_id = $("#semester").val();
+            document.getElementById("addStudentButton").style.display = 'block';
+            get_student_list(semester_id);
+        });
+
+        $(document).on("click", "#editExempt", function (event) {
+            if($(this).children("input").length > 0) return false;
+            var obj = $(this);
+            var s_id = obj.data('id');
+            var name = obj.data('name');
+            var reason = obj.data('reason');
+            var semester_id = $("#semester").val();
+            var modal1 = document.getElementById("exempt_myModal");
+            modal1.style.display = "block";
+
+            $("#exemption_reason").val(reason);
+            document.getElementById("se_name").innerHTML = 'Roll Number : <b>'+ name +'</b>';
+            var exempt = document.getElementById('exempt');
+            var unexempt = document.getElementById('unexempt');
+
+            window.onclick = function(event) {
+                if (event.target == modal1) {
+                    modal1.style.display = "none";
+                }
+            }
+            exempt.onclick = function() {
+                var new_reason = $("#exemption_reason").val();
+                if((confirm("Are You sure you want to exempt student from TA Duty ?") == true) && !!s_id && !!semester_id && !!new_reason){
+                    $.ajax({
+                        url: "/studentExemption",
+                        method: "POST",
+                        data: {'semester_id':semester_id,'student_id':s_id,'action':'exempt','reason':new_reason},
+                        //dataType: "json",
+                        success: function (resp) { //alert(category_id)
+                            if(resp.success == true){
+                                document.getElementById('exempt_'+s_id).innerHTML = '&#10060';
+                                obj.data('reason',new_reason).attr("data-reason",new_reason);
+                            }
+                            if(typeof resp.message != 'undefined'){
+                                var x = document.getElementById("snackbar");
+                                x.className = "show";
+                                var html = '';
+                                html += '<p>'+resp.message+'</p>'
+                                $("#snackbar").html(html);
+                                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                            }
+                        },
+                    });
+                }
+                modal1.style.display = "none";
+            }
+            unexempt.onclick = function() {
+                if((confirm("Are You sure you want to student active for TA Duty ?") == true) && !!s_id && !!semester_id){
+                    $.ajax({
+                        url: "/studentExemption",
+                        method: "POST",
+                        data: {'semester_id':semester_id,'student_id':s_id,'action':'unexempt','reason':''},
+                        //dataType: "json",
+                        success: function (resp) { //alert(category_id)
+                            if(resp.success == true){
+                                document.getElementById('exempt_'+s_id).innerHTML = '';
+                                obj.data('reason','').attr('data-reason','');
+                            }
+                            if(typeof resp.message != 'undefined'){
+                                var x = document.getElementById("snackbar");
+                                x.className = "show";
+                                var html = '';
+                                html += '<p>'+resp.message+'</p>'
+                                $("#snackbar").html(html);
+                                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                            }
+                        },
+                    });
+                }
+                modal1.style.display = "none";
+            }
+        });
+
+        $("#activateStudent").on('submit', function (e) {
+            e.preventDefault();
+            var s_id = $("#student_name").val();
+            var s_name = $("#student_name option:selected").text();
+            var text = "Are You sure you want to register student "+s_name+"?";
+            var semester_id = $("#semester").val();
+            alert(text);
+            if((confirm(text) == true) && !!s_id && !!semester_id){
+                document.getElementById("myModal").style.display = 'none';
+                $.ajax({
+                    url: "/editStudentStatus",
+                    method: "POST",
+                    data: {'semester_id':semester_id,'student_id':s_id,'status':'active'},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        if(resp.result == true){
+                            get_student_list(semester_id);
+                        }
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+
+        });
+
+        $(document).on("click", "#editStudent", function (event) {
+            if($(this).children("input").length > 0) return false;
+            var s_id = $(this).data('id');
+            var semester_id = $("#semester").val();
+
+            var modal = document.getElementById("myModal");
+            modal.style.display = "block";
+
+            var cancel_s = document.getElementById("cancel_s");
+            var save_s = document.getElementById("save_s");
+
+            var ele_name = document.getElementById("sn_"+s_id);
+            var ele_rollno = document.getElementById("sr_"+s_id);
+            var ele_email = document.getElementById("se_"+s_id);
+            var ele_program = document.getElementById("sp_"+s_id);
+            var ele_field = document.getElementById("sf_"+s_id);
+            var ele_category = document.getElementById("sc_"+s_id);
+
+            $("#name_s").val(ele_name.innerHTML);
+            $("#email_s").val(ele_email.innerHTML);
+            $("#roll_number_s").val(ele_rollno.innerHTML);
+            $("#program_s").val(ele_program.innerHTML).selectpicker("refresh");
+            $("#field_s").val(ele_field.innerHTML).selectpicker("refresh");
+            $("#category_s").val(ele_category.innerHTML).selectpicker("refresh");
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            // save_s.onclick = function() {
+            //     var name = $("#name_s").val();
+            //     var roll_number = $("#roll_number_s").val();
+            //     var email = $("#email_s").val();
+            //     var program = $("#program_s").val();
+            //     var field = $("#field_s").val();
+            //     var category = $("#category_s").val();
+            //     modal.style.display = "none";
+            //     if(!!name && !!email && !!field && !!program && !!category && !!semester_id && !!roll_number){
+            //         $.ajax({
+            //             url: "/editStudentData",
+            //             method: "POST",
+            //             data: {'name':name,'email':email,'roll_number':roll_number,
+            //                     'field':field,'program':program,'category':category,
+            //                     'student_id':s_id,'semester_id':semester_id},
+            //             //dataType: "json",
+            //             success: function (resp) { //alert(category_id)
+            //                 if(resp.success==true){
+            //                     ele_name.innerHTML = name;
+            //                     ele_rollno.innerHTML = roll_number;
+            //                     ele_email.innerHTML = email;
+            //                     ele_program.innerHTML = program;
+            //                     ele_field.innerHTML = field;
+            //                     ele_category.innerHTML = category;
+            //                 }
+            //                 if(typeof resp.message != 'undefined'){
+            //                     var x = document.getElementById("snackbar");
+            //                     x.className = "show";
+            //                     var html = '';
+            //                     html += '<p>'+resp.message+'</p>'
+            //                     $("#snackbar").html(html);
+            //                     setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+            //                 }
+            //             },
+            //         });
+            //     }else{
+            //         alert('All fields must be specified')
+            //     }
+            // }
+            cancel_s.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+
+        $("#addStudent").on('submit', function (e) {
+            e.preventDefault();
+            var name = $("#name_s").val();
+            var email = $("#email_s").val();
+            var roll_number = $("#roll_number_s").val();
+            var program = $("#program_s").val();
+            var field = $("#field_s").val();
+            var category = $("#category_s").val();
+            var semester_id = $("#semester").val();
+            if(!!name && !!email && !!roll_number && !!semester_id &&
+                !!field && !!program && !!category){
+                document.getElementById("myModal").style.display = 'none';
+                $.ajax({
+                    url: "/addStudentData",
+                    method: "POST",
+                    data: {'name':name,'email':email,
+                            'roll_number':roll_number,'field':field,
+                            'program':program,'category':category,
+                            'semester_id':semester_id},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        if(resp.success == true){
+                            get_student_list(semester_id);
+                        }
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }else{
+                alert('All values must be specified')
+            }
+        });
+
+        $(document).on("click", "#editStatus", function (event) {
+            var s_id = $(this).data('id');
+            var rollno = $(this).data('name');
+            rollno = rollno.toString();
+            var text = "Are You sure you want to de-register "+rollno+" for the Selected Semester ?";
+            alert(text);
+            if(confirm(text)==true){
+                $.ajax({
+                    url: "/editStudentStatus",
+                    method: "POST",
+                    data: {'semester_id':$("#semester").val(),'student_id':s_id,'status':'inactive'},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        if(resp.result == true){
+                            try {  
+                                var table = document.getElementById('student_rows');  
+                                var rowCount = table.rows.length;
+                                for (var i = 0; i < rowCount; i++) {  
+                                    var row = table.rows[i];
+                                    var rowObj = row.cells[2].innerHTML;
+                                    if (rowObj.includes(rollno)) {
+                                        table.deleteRow(i);  
+                                        break;  
+                                    }  
+                                }  
+                            } catch (e) {  
+                                alert(e);  
+                            }
+                        }
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+        });
+    
+    });
+
+</script>
+{% endblock Table %}

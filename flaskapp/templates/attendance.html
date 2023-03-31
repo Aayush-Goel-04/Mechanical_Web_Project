@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    {% if title %}
+        <title> {{title}} </title>
+    {% else %}
+        <title>Welcome to IITB Mechanical </title>
+    {% endif%}
+
+</head>
+<body>
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md">
+        <br>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div style="width:60%; margin-left:20%; font-size: large;" class="alert alert-{{ category }}">
+                <b>{{ message }}</b>
+            </div>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+        </div>
+    </div>
+</main>
+<div id="snackbar"></div>
+<div style="width: 80%; margin-left:10%; margin-top:2%;">
+<div class="col-md-12">
+    <div class="col-md-6">
+        <div class="row">
+            <h4><b>Email</b> : {{student.email}}</h4>
+            <h4><b>Name</b> : {{student.name}}</h4>
+            <h4><b>Roll number</b> : {{student.roll_number}}</h4>
+            <h4><b>Category</b> : {{student.category}}</h4>
+            <h4><b>Program</b> : {{student.program}}</h4>
+            <h4><b>Field</b> : {{student.field}}</h4>
+            <h4><b>Faculty Advisor's</b> :</h4>
+            <div class="col-md-8">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Faculty</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="facadsData">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Alternate email</label>
+                <input type="text" class="form-control" name="alt_email" id="alt_email" value="{{ student.alt_email }}">
+            </div>
+            <div class="col-md-6">
+                <label>Phone number</label>
+                <input type="tel" class="form-control" name="phone_number" id="phone_number" value="{{ student.phone_number }}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label>Hostel number</label>
+                <input type="number" class="form-control" name="hostel_no" id="hostel_no" value="{{ student.hostel_no }}" min="0">
+            </div>
+            <div class="col-md-6">
+                <label>Room number</label>
+                <input type="number" class="form-control" name="room_no" id="room_no" value="{{ student.room_no }}" min="0">
+            </div>
+        </div>
+        <!--
+		<input type="submit" id="StudentDataSubmit" value="Save Changes" class="btn btn-primary btn-sm" style="margin: 1% 0% 2%;">
+	-->
+
+        <h4 style="text-align:center"><b> Add faculty advisor </b></h4>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="facadStatus"> Select status </label>
+                <select name="facadStatus" data-live-search="true" id="facadStatus" class="form-control" title="Select Facad Status">
+                    <option value="None" selected>-- Select --</option>
+                    <option value="primary">Primary</option>
+                    <option value="secondary">Secondary</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="facadID">Select Faculty</label>
+                <select name="facadID" data-live-search="true" id="facadID" class="form-control" title="Select Faculty Advisor">
+                    <option value="None" selected>-- Select --</option>
+                    {% for faculty in facultys %}
+                    <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <!--
+        <input type="submit" id="addFacad" value="Save Changes" class="btn btn-primary btn-sm" style="margin: 1% 0% 2%;">
+	-->
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row" style="text-align:center;">
+        <hr>
+        <h4><b> Student Project </b></h4>
+        <label for="project">Project Topic (Max 200 characters):</label>
+        <textarea id="project" name="project" required placeholder="Max Length 200 characters"
+                minlength="3" maxlength="500" rows="3" style="width:50%; margin:auto;" 
+                class="form-control">{{student.project}}</textarea><br>
+        <!--
+        <input type="submit" value="Add" id="addProject" class="btn btn-primary">
+	-->
+        <input type="submit" value="Save" id="saveData" class="btn btn-primary">
+
+        <table class="table table-bordered" style="width:50%; margin:auto; margin-top:5px;" >
+            <thead>
+                <th>Year</th>
+                <th>Project</th>
+                <th>Grade</th>
+                <th>Faculty</th>
+                <th>Date</th>
+                <th>Committee</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6">
+                        <b style=" text-align: center; font-size:large;">Project Grade</b>
+                    </td>
+                </tr>
+                {% for grade in grades.project_grades %}
+                    <tr>
+                        <td>APS {{ grade.year}}</td>
+                        <td>{{ grade.project }}</td>
+                        <td>{{ grade.grade }}</td>
+                        <td>{{ grade.faculty }}</td>
+                        <td>{{ grade.date }}</td>
+                        <td>
+                            {% for fac in grade.committee[:-1] %}
+                            {{fac}}<br>
+                            {% endfor %}
+                            <b>Other :</b>{{grade.other_committee}}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not grades.project_grades %}
+                    <tr><td colspan="6"> Student project has not been graded yet</td></tr>
+                {% endif %}
+                <tr>
+                    <td colspan="6">
+                        <b style=" text-align: center; font-size:large;">Seminar Grade</b>
+                    </td>
+                </tr>
+                {% for grade in grades.seminar_grades %}
+                    <tr>
+                        <td>APS {{ grade.year}}</td>
+                        <td>{{ grade.project }}</td>
+                        <td>{{ grade.grade }}</td>
+                        <td>{{ grade.faculty }}</td>
+                        <td>{{ grade.date }}</td>
+                        <td>
+                            {% for fac in grade.committee[:-1] %}
+                            {{fac}}<br>
+                            {% endfor %}
+                            <b>Other :</b>{{grade.other_committee}}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not grades.seminar_grades %}
+                    <tr><td colspan="6"> Student seminar has not been graded yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row" style="text-align:center;">
+        <hr>
+        <h4><b> Course Alloted as TA </b></h4>
+        {% for course_ta in course_tas %}
+            <p>{{course_ta.semester}} | {{course_ta.course}} | {{course_ta.section}}</p>
+        {% endfor %}
+    </div>
+    <div class="row" style="text-align:center; margin-bottom:5%;">
+        <hr>
+        <h4><b>Past Acknowledgements</b></h4>
+        <a href="{{ url_for( 'markAttendance', student_id=student.id, student_token=student.token ) }}">
+            <input type="button" class="btn btn-primary btn-lg" value="Save Acknowledgement" style="margin-bottom:1%;"/>
+        </a>
+        <br>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Acknowledgement Date(s)</th>
+                    <th>Acknowledgement Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance.id }}</td>
+                        <td>{{ attendance.date_posted }}</td>
+                        <td>{{ attendance.datetime_posted }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+
+<script>
+    function getFacadData() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const student_id = urlParams.get('student_id');
+        const student_token = urlParams.get('student_token');
+        $.ajax({
+            url: "/getFacadData",
+            method: "POST",
+            data: {'student_id': student_id,'student_token':student_token},
+            //dataType: "json",
+            success: function (resp) { //alert(category_id)
+                const rows = document.getElementById('facadsData');
+                rows.innerHTML = "";
+                facads = resp.facads;
+                for(let i=0 ; i<facads.length ; i++){
+                    var row = rows.insertRow(i);
+                    row.insertCell(0).innerHTML = facads[i]["status"];
+                    row.insertCell(1).innerHTML = facads[i]["facad_name"];
+                    row.insertCell(2).innerHTML = '<button type="button" onclick="facadRemove('+resp.facads[i].id+');" class="btn btn-danger btn-sm"> Remove </button>';
+                }
+            },
+        });
+    }
+
+    function facadRemove(facad_id) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const student_id = urlParams.get('student_id');
+        const student_token = urlParams.get("studnet_token");
+        $.ajax({
+                url: "/facadRemove",
+                method: "POST",
+                data: {'facad_id':facad_id,'student_id': student_id,'student_token':student_token},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    getFacadData();
+                    if(typeof resp.message != 'undefined'){
+                        var x = document.getElementById("snackbar");
+                        x.className = "show";
+                        var html = '';
+                        html += '<p>'+resp.message+'</p>'
+                        $("#snackbar").html(html);
+                        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                    }
+                },
+            });
+        
+    }
+    
+    $(document).ready(function () {
+        $("#facadID").selectpicker();
+        $("#field").selectpicker();
+        $("#program").selectpicker();
+        $("#facadStatus").selectpicker();
+
+        getFacadData();
+
+        $(document).on("click", "#saveData", function () {
+            
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const student_id = urlParams.get('student_id');
+            const student_token = urlParams.get("student_token");
+            var facad_status = $("#facadStatus").val();
+            var facad_id = $("#facadID").val();
+            var project = $("#project").val();
+            
+            $.ajax({
+                url: "/updateStudentData",
+                method: "POST",
+                data: {'phone_number':$("#phone_number").val(), 
+                    'hostel_no':$("#hostel_no").val(),
+                    'room_no':$("#room_no").val(),
+                    'alt_email':$("#alt_email").val(),
+                    'student_id': student_id,
+                    'student_token':student_token,
+                    'facad_id':facad_id,
+                    'status':facad_status,
+                    'project':project,
+                },
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    if(typeof resp.message != 'undefined'){
+                        var x = document.getElementById("snackbar");
+                        x.className = "show";
+                        var html = '';
+                        html += '<p>'+resp.message+'</p>'
+                        $("#snackbar").html(html);
+                        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                    }
+                    getFacadData();
+                },
+            });
+        });
+    });
+</script>
+</body>
+</html>

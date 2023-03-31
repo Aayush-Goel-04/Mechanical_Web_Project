@@ -1,0 +1,206 @@
+{%extends "layout.html" %}
+{% block Table %}
+<div id="snackbar">
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <p id="c_data" style="text-align:center"></p>
+        <div class="row">
+            {% if current_user.role == 'admin' %}
+            <div class="form-group col-md-3">
+                <label for="course_code">Course Code : (format: ME XXX )</label>
+                <input type="text" id="course_code" class="form-control">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="course_field">Select Field</label>
+                <select name="course_field" data-live-search="true" id="course_field" class="form-control" title="Select Field">
+                    {% for field in fields %}
+                        <option value="{{ field }}">{{ field }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="course_name">Enter Course Name</label>
+                <input type="text" id="course_name" class="form-control"> 
+            </div>
+            <input type="submit" id="cancel" value="Cancel" class="btn btn-danger" style="margin: 4% 2% 2%;">
+            <input type="submit" id="save" value="Save Changes" class="btn btn-success" style="margin: 4% 2% 2%;">
+            {% else %}
+                <p style="text-align:center"> You don't have the permission to edit course data.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h1 style="text-align:center;"><b>Course Table</b></h1>
+<div style="width: 98%; margin-left:1%; ">
+    <div class="col-md-12">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <label for="semester">Select semester to fetch data</label>
+            <select name="semester" data-live-search="true" id="semester" class="form-control" title="Select Semester">
+                {% for semester in semesters %}
+                <option value="{{semester.id}}">{{semester.semester}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
+            <form action="/findCourse">
+                <div class="row">
+                    <label for="course"> Search course </label>
+                    <select name="course" data-live-search="true" id="course" class="form-control" title="Select Course">
+                        {% for course in courses %}
+                        <option value="{{course.id}}">{{course.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row" style="margin-top:5px; margin-bottom:5px;">
+                    <button type="submit" class="btn btn-primary">Get course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Field</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th></th>
+                <th>Instructors</th>
+                <th>Is_mandatory</th>
+            </tr>
+        </thead>
+        <tbody id="course_rows">
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+    
+    $(document).ready(function () {
+        $("#semester").selectpicker();
+        $("#course").selectpicker();
+        $("#course_field").selectpicker();
+
+        function get_course_list(semester_id) {
+            $.ajax({
+                url: "/get_course_list",
+                method: "POST",
+                data: {'semester_id':semester_id},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    courses = resp.courses;
+                    const rows = document.getElementById('course_rows');
+                    rows.innerHTML = "";
+                    for(let i=0 ; i<courses.length ; i++){
+                        var row = rows.insertRow(i);
+                        row.insertCell(0).innerHTML = i+1;
+                        row.insertCell(1).innerHTML = '<span id="field_'+courses[i]["id"]+'">'+courses[i]["field"]+'</span>';
+                        row.insertCell(2).innerHTML = '<a id="code_'+courses[i]["id"]+'" target="_blank"\
+                                                     href="{{url_for("courseData", course_id="")}}'
+                                                    +courses[i]["id"]+'">'+courses[i]["code"]+'</a>';
+                        row.insertCell(3).innerHTML = '<span id="name_'+courses[i]["id"]+'">'+courses[i]["name"]+'</span>';
+                        if(resp.admin == true){
+                            row.insertCell(4).innerHTML = '<button id="editData" data-id="'+courses[i]["id"]+'"\
+                                                    <i class="fa fa-pencil-square-o"></i></button>';
+                        }else{
+                            row.insertCell(4).innerHTML = '';
+                        }
+                        var html = '';
+                        sections = courses[i]["instructors"]
+                        for(let j=0 ; j<sections.length ; j++){
+                            html += '<p>'+sections[j]["section"]
+                                    +' <b>-</b> <a href="{{url_for("facultyData", faculty_id="")}}'+sections[j]["faculty_id"]+'">'+
+                                    sections[j]["name"]+'</a> | <b>TAs : </b>'+sections[j]["TA"]+'</p>';
+                        }
+                        row.insertCell(5).innerHTML = html;
+                        row.insertCell(6).innerHTML = courses[i]['is_mandatory'];
+                    }
+                },
+            });
+        }
+        $(document).on("change", "#semester", function () {
+            var semester_id = $("#semester").val();
+            console.log(semester_id);
+            get_course_list(semester_id);
+        });
+
+        $(document).on("click", "#editData", function (event) {
+            if($(this).children("input").length > 0) return false;
+            var c_id = $(this).data('id');
+
+            var modal = document.getElementById("myModal");
+            modal.style.display = "block";
+            // name ldap email field phone
+            var c_data = document.getElementById("c_data");
+
+            var name = document.getElementById("name_"+c_id);
+            var field = document.getElementById("field_"+c_id);
+            var code = document.getElementById("code_"+c_id);
+            $("#course_name").val(name.innerHTML);
+            $("#course_field").val(field.innerHTML).selectpicker("refresh");
+            $("#course_code").val(code.innerHTML);
+            var cancel = document.getElementById("cancel");
+            var save = document.getElementById("save");
+            c_data.innerHTML = '<b> Course :</b> ' + code.innerHTML + ' | ' +
+                                    field.innerHTML + ' | ' +
+                                    name.innerHTML;
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            save.onclick = function() {
+                var new_name = $("#course_name").val();
+                var new_field = $("#course_field").val();
+                var new_code = $("#course_code").val();
+                if(!(!!new_name &&!!new_field && !!new_code)){
+                    alert('Course Code, Field and Name must be specified !');
+                }else{
+                    new_code = new_code.trim();
+                    new_code = new_code.toUpperCase();
+                    cde = new_code.split(" ");
+                    if(cde.length == 2){
+                        new_code = cde.join(' ');
+                        modal.style.display = "none";
+                        $.ajax({
+                            url: "/updateCourseData",
+                            method: "POST",
+                            data: {'name':new_name,'field':new_field,
+                                'code':new_code,'course_id':c_id},
+                            //dataType: "json",
+                            success: function (resp) { //alert(category_id)
+                                if(typeof resp.message != 'undefined'){
+                                    if(resp.key == true){
+                                        name.innerHTML  = new_name;
+                                        field.innerHTML = new_field;
+                                        code.innerHTML = new_code;
+                                    }
+                                    var x = document.getElementById("snackbar");
+                                    x.className = "show";
+                                    var html = '';
+                                    html += '<p>'+resp.message+'</p>'
+                                    $("#snackbar").html(html);
+                                    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                                }
+                            },
+                        });
+                    }else{
+                        alert("Incorrect Course Code Format !")
+                    }
+                }
+            }
+            cancel.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+    });
+</script>
+{% endblock Table %}

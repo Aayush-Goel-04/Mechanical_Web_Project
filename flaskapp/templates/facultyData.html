@@ -1,0 +1,66 @@
+{%extends "layout.html" %}
+{% block content %}
+<div style="width: 70%; margin-left:15%; margin-top:2%;">
+    <div class="col-md-12">
+        <div class="col-md-6">
+            <h4><b>Name</b> : {{faculty.name}}</h4>
+            <h4><b>Ldap</b> : {{faculty.ldap}}</h4>
+            <h4><b>Email</b> : {{faculty.email}}</h4>
+            
+        </div>
+        <div class="col-md-6">
+            <h4><b>Field</b> : {{faculty.field}}</h4>
+            <h4><b>Status</b> : {{faculty.status}}</h4>
+            <h4><b>Phone number</b> : {{faculty.phone_no}}</h4>
+        </div>
+    </div>
+    <h2 style="text-align: center;"><b> Course Allotments </b></h2>
+    <table class="table table-bordered">
+        <tbody>
+            {% for semester in semesters[::-1] %}
+            <tr><td colspan="3">&nbsp;</td></tr>
+            <tr>
+                <td style="text-align:center; font-size:large;" colspan="3">
+                    <b>{{ semester.semester }}</b>
+                </td>
+            </tr>
+                {% for course in semester.courses %}
+                <tr>
+                    <td><a href="{{ url_for('courseData',course_id=course.course_id)}}">{{course.code}}</a></td>
+                    <td>{{course.section}}</td>
+                    <td>
+                    {% for ta in course.tas %}
+                        <a href="{{ url_for('studentData',student_id = ta.student_id)}}">{{ta.name}}</a><br>
+                    {% endfor %}
+                    </td>
+                </tr>
+                {% endfor%}
+            {% endfor%}
+        </tbody>
+    </table>
+    <hr>
+
+    <h2 style="text-align: center;"><b> Advising Students </b></h2>
+    <table class="table table-bordered sortable">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Program</th>
+                <th>Name</th>
+                <th>Roll number</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for facad in facads %}
+            <tr>
+                <td>{{ facad.student.field }}</td>
+                <td>{{ facad.student.program }}</td>
+                <td>{{ facad.student.name }}</td>
+                <td><a href="{{ url_for('studentData',student_id=facad.student_id)}}">{{ facad.student.roll_number }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <hr>
+</div>
+{% endblock content %}

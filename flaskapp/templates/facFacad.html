@@ -1,0 +1,47 @@
+{%extends "layout.html" %}
+{% block content %}
+
+<div class="row" style="text-align:center; margin-left:15%; margin-right:15%;">
+    <h3>Advising Students</h3>
+    <table class="table table-sm table-bordered sortable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Field</th>
+                <th>Program</th>
+                <th>Name</th>
+                <th>Roll No</th>
+                <th>Role (primary/secondary)</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for student in facads %}
+            <tr>
+                <td>{{ student.sno }}</td>
+                <td>{{ student.name }}</td>
+                <td>
+                    <a target="_blank" 
+                    href="{{ url_for('studentData',student_id=student.student_id)}}">
+                    {{ student.roll_number }}</a>
+                </td>
+                <td>{{ student.field }}</td>
+                <td>{{ student.program }}</td>
+                <td>{{ student.status }}</td>
+                <td>
+                    {% if student.status == 'primary' %}
+                        <a target="_blank" 
+                        href="{{ url_for('studentGrade', student_id=student.student_id ) }}">Grade</a>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('facRemoveFacad', faculty_id = faculty.id , facad_id = student.facad_id ) }}" style="color:red;"
+                        onclick="return confirm('Do you want to remove this student under your Guidance ?');">
+                        Remove
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

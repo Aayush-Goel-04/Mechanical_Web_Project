@@ -1,0 +1,11 @@
+{%extends "layout.html" %}
+{% block content %}
+<div class="content-section-login">
+    <form action="/get_student_token" method="POST" class="form-group">
+        <label for="roll_number">Enter Roll Number</label>
+        <input type="text" name="roll_number" id="roll_number" class="form-control">
+        <br>
+        <input type="submit" value="Submit" class="btn btn-primary">
+    </form>
+</div>
+{% endblock content%}

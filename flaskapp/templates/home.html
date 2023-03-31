@@ -1,0 +1,14 @@
+{%extends "layout.html" %}
+{% block content %}
+<h1 style="text-align:center"> Welcome to Allotment Portal</h1>
+<div style="text-align:center; width:40%; margin:auto;">
+    <table class="table table-bordered table-striped">
+        <tbody>
+            <tr><td>Name</td><td>{{current_user.name}}</td></tr>
+            <tr><td>LDAP</td><td>{{current_user.ldap}}</td></tr>
+            <tr><td>Email</td><td>{{current_user.email}}</td></tr>
+            <tr><td>Field</td><td>{{current_user.field}}</td></tr>
+        </tbody>
+    </table>
+</div>
+{% endblock content%}

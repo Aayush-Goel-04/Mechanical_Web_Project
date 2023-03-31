@@ -1,0 +1,219 @@
+{%extends "layout.html" %}
+{% block content %}
+<div id="snackbar"></div>
+<div style="width: 80%; margin-left:10%; margin-top:2%;">
+<div class="col-md-12">
+    <div class="col-md-6">
+        <h4><b>Name</b> : {{student.name}}</h4>
+        <h4><b>Roll number</b> : {{student.roll_number}}</h4>
+        <h4><b>Email</b> : {{student.email}}</h4>
+        <h4><b>Alternate Email</b> : {{student.alt_email}}</h4>
+        <h4><b>Faculty advisor's</b> :</h4>
+        {% for facad in facads %}
+            <h4 style="margin-left:20px">{{facad.status}} - {{facad.facad_name}}</h4>
+        {% endfor %}
+    </div>
+    <div class="col-md-6">
+        <div class="row">
+            {% if current_user.role == 'admin' %}
+                <div class="col-md-6">
+                    <label for="program">Change Program</label>
+                    <select name="program" data-live-search="true" id="program" class="form-control" title="Select Program">
+                        {% for program in programs %}
+                            {% if program == student.program %}
+                            <option value="{{ program }}" selected>{{ program }}</option>
+                            {% else %}
+                            <option value="{{ program }}">{{ program }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="field">Change Field</label>
+                    <select name="field" data-live-search="true" id="field" class="form-control" title="Select Field">
+                        {% for field in fields %}
+                            {% if field == student.field %}
+                            <option value="{{ field }}" selected>{{ field }}</option>
+                            {% else %}
+                            <option value="{{ field }}">{{ field }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="category">Change Category</label>
+                    <select name="category" data-live-search="true" id="category" class="form-control" title="Select category">
+                        {% for category in categories %}
+                            {% if category == student.category %}
+                            <option value="{{ category }}" selected>{{ category }}</option>
+                            {% else %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="submit" id="changepfc" value="Save Changes" class="btn btn-primary" style="margin: 4% 2% 2%;">
+            {% else %}
+                <h4><b>Program</b> : {{student.program}}</h4>
+                <h4><b>Field</b> : {{student.field}}</h4>
+                <h4><b>Category</b> : {{student.category}}</h4>
+            {% endif %}
+            <h4><b>Phone number</b> : {{student.phone_number}}</h4>
+            <h4><b>Hostel number</b> : {{student.hostel_no}}</h4>
+            <h4><b>Room number</b> : {{student.room_no}}</h4>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row" style="text-align:center;">
+        <hr>
+        <h4><b> Student Grades </b></h4>
+        <p><b>Project </b>:{{student.project}}</p>
+        <table class="table table-bordered" style="width:60%; margin:auto; margin-top:5px;" >
+            <thead>
+                <th>Year</th>
+                <th>Project</th>
+                <th>Grade</th>
+                <th>Faculty</th>
+                <th>Date</th>
+                <th>Committee</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr><td colspan="7"><b>Student Project Grades</b></td></tr>
+                {% for grade in grades.project_grades %}
+                    <tr>
+                        <td>APS {{ grade.year}}</td>
+                        <td>{{ grade.project }}</td>
+                        <td>{{ grade.grade }}</td>
+                        <td>{{ grade.faculty }}</td>
+                        <td>{{ grade.date }}</td>
+                        <td>
+                            {% for fac in grade.committee[:-1] %}
+                            {{fac}}<br>
+                            {% endfor %}
+                            <b>Other :</b>{{grade.other_committee}}
+                        </td>
+                        <td>
+                            {% if current_user.role == 'admin' %}
+                            {% if grade.year == cnt.project %}
+                            <a href="{{ url_for('deleteStudentProjectGrade', student_id = student.id)}}"
+                                onclick="return confirm('Do you want to delete this grade for this student ?')">
+                                <i class="fa fa-trash-o" style="color:red"></i>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not grades.project_grades %}
+                    <tr><td colspan="7"> Student Project has not been graded yet</td></tr>
+                {% endif %}
+                <tr><td colspan="7"><b>Student Seminar Grades</b></td></tr>
+                {% for grade in grades.seminar_grades %}
+                    <tr>
+                        <td>APS {{ grade.year}}</td>
+                        <td>{{ grade.project }}</td>
+                        <td>{{ grade.grade }}</td>
+                        <td>{{ grade.faculty }}</td>
+                        <td>{{ grade.date }}</td>
+                        <td>
+                            {% for fac in grade.committee[:-1] %}
+                            {{fac}}<br>
+                            {% endfor %}
+                            <b>Other :</b>{{grade.other_committee}}
+                        </td>
+                        <td>
+                            {% if current_user.role == 'admin' %}
+                            {% if grade.year == cnt.seminar %}
+                            <a href="{{ url_for('deleteStudentSeminarGrade', student_id = student.id)}}"
+                                onclick="return confirm('Do you want to delete this grade for this student ?')">
+                                <i class="fa fa-trash-o" style="color:red"></i>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not grades.seminar_grades %}
+                    <tr><td colspan="6"> Student Seminar has not been graded yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <div class="row" style="text-align:center;">
+        <hr>
+        <h4><b> Courses Alloted </b></h4>
+        {% for course_ta in course_tas[::-1] %}
+            <p> {{course_ta.semester}} 
+                | <a href="{{ url_for('courseData',course_id=course_ta.course_id)}}">{{course_ta.course}}</a> 
+                | {{course_ta.section}}
+            </p>
+        {% endfor %}
+        {% if not course_tas %}
+            <p>None</p>
+        {% endif %}
+    </div>
+    <div class="row" style="text-align:center; margin-bottom:5%;">
+        <hr>
+        <h4><b>Acknowledgement Table</b></h4>
+        <table class="table table-bordered sortable">
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Acknowledgement Date</th>
+                    <th>Acknowledgement Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance.id }}</td>
+                        <td>{{ attendance.date_posted }}</td>
+                        <td>{{ attendance.datetime_posted }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+<script>
+    
+    $(document).ready(function () {
+        $("#field").selectpicker();
+        $("#program").selectpicker();
+        $("#category").selectpicker();
+
+        $(document).on("click", "#changepfc", function () {
+            var field = $("#field").val();
+            var program = $("#program").val();
+            var category = $("#category").val();
+            if(!!field && !!program && !!category){
+                $.ajax({
+                    url: "/editStudentpfc",
+                    method: "POST",
+                    data: {'field':field,'program':program,'category':category,
+                            'roll_number':'{{student.roll_number}}'},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        console.log(field,program);
+                        if(typeof resp.message != 'undefined'){
+                            var x = document.getElementById("snackbar");
+                            x.className = "show";
+                            var html = '';
+                            html += '<p>'+resp.message+'</p>'
+                            $("#snackbar").html(html);
+                            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                        }
+                    },
+                });
+            }
+        });
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,400 @@
+{%extends "layout.html" %}
+{% block content %}
+<div id="snackbar">
+</div>
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <p id="s_name"></p>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <form action='{{ url_for("editProjectGrade", student_id=student.id)}}' enctype="multipart/form-data" method="POST">
+                    <div class="form-group col-md-12">
+                        <p><b>Student</b> : {{student.name}} | {{student.rollno}}</p>
+                        <p><b>Student Project</b> : {{student.project}}</p>
+                        <h3 style="text-align:center"><b>Edit Student Project Grade</b></h3>
+                        <div class="col-md-4">
+                            <label for="editgrade">Assign Grade :</label>
+                            <select name="editgrade" data-live-search="true" id="editgrade" class="form-control" title="Select Grade">
+                                {% for grd in grds %}
+                                <option value="{{grd}}">{{grd}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label>Select a pdf file to upload:</label>
+                            <input type="file" id="editgradesheet" required name="editgradesheet" class="form-control"
+                                    onchange="return fileValidation('editgradesheet')" accept=".pdf">
+                        </div>
+                        <br>
+                    </div>
+                    <div class="form-group col-md-12" >
+                        <div class="form-group col-md-8">
+                            <label for="edit_num_committee">Select number of committee members to be added:</label>
+                            <input type="number" id="edit_num_committee" name="edit_num_committee" value='0' min="0" max="100">
+                            <button type="button" onclick="add_committee_selects('edit_num_committee','e_','edit_committee_members')" class="btn btn-default">Add</button>
+                        </div><br>
+                    </div>
+                    <div class="form-group col-md-12" id="edit_committee_members">
+                    </div><br>
+                    <div class="form-group col-md-8">
+                        <div class="form-group col-md-8">
+                            <label for="edit_other_committee">None Department Committee Members (Use , to seperate names):</label>
+                            <input type="text" id="edit_other_committee" name="edit_other_committee"
+                                placeholder="Enter Names of Non Department Committee Members"
+                                class="form-control"/>
+                        </div>
+                    </div><br>
+                    <div class="form-group col-md-12" style="margin:auto" >
+                        <input type="button" id="cancel" value="Cancel" class="btn btn-danger">
+                        <input type="submit" value="Submit" style="margin-left:40%" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="s_myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <p id="s_name"></p>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <form action='{{ url_for("editSeminarGrade", student_id=student.id)}}' enctype="multipart/form-data" method="POST">
+                    <div class="form-group col-md-12">
+                        <p><b>Student</b> : {{student.name}} | {{student.rollno}}</p>
+                        <p><b>Student Project</b> : {{student.project}}</p>
+                        <h3 style="text-align:center"><b>Edit Student Project Grade</b></h3>
+                        <div class="col-md-4">
+                            <label for="s_editgrade">Assign Grade :</label>
+                            <select name="s_editgrade" data-live-search="true" id="s_editgrade" class="form-control" title="Select Grade">
+                                {% for grd in grds %}
+                                <option value="{{grd}}">{{grd}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label>Select a pdf file to upload:</label>
+                            <input type="file" id="s_editgradesheet" required name="s_editgradesheet" class="form-control"
+                                    onchange="return fileValidation('s_editgradesheet')" accept=".pdf">
+                        </div>
+                        <br>
+                    </div>
+                    <div class="form-group col-md-12" >
+                        <div class="form-group col-md-8">
+                            <label for="s_edit_num_committee">Select number of committee members to be added:</label>
+                            <input type="number" id="s_edit_num_committee" name="s_edit_num_committee" value='0' min="0" max="100">
+                            <button type="button" onclick="add_committee_selects('s_edit_num_committee','s_e_','s_edit_committee_members')" class="btn btn-default">Add</button>
+                        </div><br>
+                    </div>
+                    <div class="form-group col-md-12" id="s_edit_committee_members">
+                    </div><br>
+                    <div class="form-group col-md-8">
+                        <div class="form-group col-md-8">
+                            <label for="s_edit_other_committee">Non Department Committee Members (Use , to seperate names):</label>
+                            <input type="text" id="s_edit_other_committee" name="s_edit_other_committee"
+                                placeholder="Enter Names of Non Department Committee Members"
+                                class="form-control"/>
+                        </div>
+                    </div><br>
+                    <div class="form-group col-md-12" style="margin:auto" >
+                        <input type="button" id="s_cancel" value="Cancel" class="btn btn-danger">
+                        <input type="submit" value="Submit" style="margin-left:40%" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-left:10%; margin-right:10%; margin-bottom:5%">
+    <h1 id="updateh1" onclick="hide_update_data('project_grade_data')"><b>Student Project Grades </b><i class="fa fa-angle-down" style="font-size:36px; float:left;"></i></h1>
+    <div id="project_grade_data">
+        <div class="row">
+            <div class="form-group col-md-12">
+                <form action='{{ url_for("projectGradeStudent", student_id=student.id)}}' enctype="multipart/form-data" method="POST">
+                    <div class="form-group col-md-12">
+                        <p><b>Student</b> : {{student.name}} | {{student.rollno}}</p>
+                        <p><b>Student Project</b> : {{student.project}}</p>
+                        <h3 style="text-align:center"><b>Add Student Project Grade</b></h3>
+                        <div class="col-md-4">
+                            <label for="grade">Assign Grade :</label>
+                            <select name="grade" required data-live-search="true" id="grade" class="form-control" title="Select Grade">
+                                {% for grd in grds %}
+                                <option value="{{grd}}">{{grd}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label>Select a pdf file to upload:</label>
+                            <input type="file" id="gradesheet" required name="gradesheet" class="form-control"
+                                    onchange="return fileValidation('gradesheet')" accept=".pdf">
+                        </div>
+                        <br>
+                    </div>
+                    <div class="form-group col-md-12" >
+                        <div class="form-group col-md-12">
+                            <label for="num_committee">Select number of committee members to be added:</label>
+                            <input type="number" id="num_committee" name="num_committee" value='0' min="0" max="100">
+                            <button onclick="add_committee_selects('num_committee','','committee_members')" type="button" class="btn btn-default">Add</button>
+                        </div><br>
+                    </div>
+                    <div class="form-group col-md-12" id="committee_members">
+                    </div><br>
+                    <div class="form-group col-md-8">
+                        <div class="form-group col-md-8">
+                            <label for="other_committee">Non Department Committee Members (Use , to seperate names):</label>
+                            <input type="text" id="other_committee" name="other_committee"
+                                placeholder="Enter Names of Non Department Committee Members"
+                                class="form-control"/>
+                        </div>
+                    </div><br>
+                    <div class="form-group col-md-12" style="margin:auto" >
+                        <input type="submit" value="Submit" style="margin-left:40%" class="btn btn-success btn-lg" />
+                    </div>
+                </form>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <table class="table table-bordered">
+                <thead>
+                    <th>Year</th>
+                    <th>Project</th>
+                    <th>Grade</th>
+                    <th>Faculty</th>
+                    <th>Document</th>
+                    <th>Date</th>
+                    <th>Committee</th>
+                    <th>Edit</th>
+                </thead>
+                <tbody>
+                    {% for grade in grades.project_grades %}
+                        <tr>
+                            <td>{{ grade.year }}</td>
+                            <td>{{ grade.project }}</td>
+                            <td>{{ grade.grade }}</td>
+                            <td>{{ grade.faculty }}</td>
+                            <td>
+                                <b><a href="{{url_for('downldStGrdPrf',filename=grade.filename)}}">
+                                    Download
+                                </a></b>
+                            </td>
+                            <td>{{grade.date}}</td>
+                            <td>
+                                {% for fac in grade.committee %}
+                                {{fac}}<br>
+                                {% endfor %}
+                                <b>Other :</b>{{grade.other_committee}}
+                            </td>
+                            <td>
+                                {% if grade.year == cnt.project %}
+                                <button id="editproject">
+                                    <i class="fa fa-pencil-square-o"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div style="margin-left:10%; margin-right:10%; margin-bottom:5%">
+    <h1 id="updateh1" onclick="hide_update_data('seminar_grade_data')"><b>Student Seminar Grades </b><i class="fa fa-angle-down" style="font-size:36px; float:left;"></i></h1>
+    <div id="seminar_grade_data">
+        <div class="row">
+            <div class="form-group col-md-12">
+                <form action='{{ url_for("seminarGradeStudent", student_id=student.id)}}' enctype="multipart/form-data" method="POST">
+                    <div class="form-group col-md-12">
+                        <p><b>Student</b> : {{student.name}} | {{student.rollno}}</p>
+                        <p><b>Student Project</b> : {{student.project}}</p>
+                        <h3 style="text-align:center"><b>Add Student Seminar Grade</b></h3>
+                        <div class="col-md-4">
+                            <label for="s_grade">Assign Grade :</label>
+                            <select name="s_grade" required data-live-search="true" id="s_grade" class="form-control" title="Select Grade">
+                                {% for grd in grds %}
+                                <option value="{{grd}}">{{grd}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label>Select a pdf file to upload:</label>
+                            <input type="file" id="s_gradesheet" required name="s_gradesheet" class="form-control"
+                                    onchange="return fileValidation('s_gradesheet')" accept=".pdf">
+                        </div>
+                        <br>
+                    </div>
+                    <div class="form-group col-md-12" >
+                        <div class="form-group col-md-8">
+                            <label for="s_num_committee">Select number of committee members to be added:</label>
+                            <input type="number" id="s_num_committee" name="s_num_committee" value='0' min="0" max="100">
+                            <button onclick="add_committee_selects('s_num_committee','s_','s_committee_members')" type="button" class="btn btn-default">Add</button>
+                        </div><br>
+                    </div>
+                    <div class="form-group col-md-12" id="s_committee_members">
+                    </div><br>
+                    <div class="form-group col-md-8">
+                        <div class="form-group col-md-8">
+                            <label for="s_other_committee">Non Department Committee Members (Use , to seperate names):</label>
+                            <input type="text" name="s_other_committee" name="s_other_committee"
+                                placeholder="Enter Names of Non Department Committee Members"
+                                class="form-control"/>
+                        </div>
+                    </div><br>
+                    <div class="form-group col-md-12" style="margin:auto" >
+                        <input type="submit" value="Submit" style="margin-left:40%" class="btn btn-success btn-lg" />
+                    </div>
+                </form>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <table class="table table-bordered">
+                <thead>
+                    <th>Year</th>
+                    <th>Project</th>
+                    <th>Grade</th>
+                    <th>Faculty</th>
+                    <th>Document</th>
+                    <th>Date</th>
+                    <th>Committee</th>
+                    <th>Edit</th>
+                </thead>
+                <tbody>
+                    {% for grade in grades.seminar_grades %}
+                        <tr>
+                            <td>{{ grade.year }}</td>
+                            <td>{{ grade.project }}</td>
+                            <td>{{ grade.grade }}</td>
+                            <td>{{ grade.faculty }}</td>
+                            <td>
+                                <b><a href="{{url_for('downldStGrdPrf',filename=grade.filename)}}">
+                                    Download
+                                </a></b>
+                            </td>
+                            <td>{{grade.date}}</td>
+                            <td>
+                                {% for fac in grade.committee %}
+                                {{fac}}<br>
+                                {% endfor %}
+                                <b>Other :</b>{{grade.other_committee}}
+                            </td>
+                            <td>
+                                {% if grade.year == cnt.seminar %}
+                                <button id="editseminar">
+                                    <i class="fa fa-pencil-square-o"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+<script>
+
+    function fileValidation(filename) {
+        var fileInput =
+            document.getElementById(filename);
+         
+        var filePath = fileInput.value;
+     
+        // Allowing file type
+        var allowedExtensions =
+                /(\.pdf)$/i;
+        if (!allowedExtensions.exec(filePath)) {
+            alert('Invalid file type');
+            fileInput.value = '';
+            return false;
+        }
+    }
+
+    function hide_update_data(hide_id) {
+      var x = document.getElementById(hide_id);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+    function add_committee_selects(num_committee,tag,whereto){
+        console.log(num_committee,tag,whereto);
+        var num_committee = $("#"+num_committee).val();
+        if (!!num_committee){
+            $.ajax({
+                url: "/get_facultys",
+                method: "POST",
+                data: {},
+                //dataType: "json",
+                success: function (resp) { //alert(category_id)
+                    var html = '';
+                    for (var i = 0; i < num_committee; i++) {
+                        html += '<div class="col-md-4"> ';
+                            html += '<select name="'+tag+'committee_'+i+'" required data-live-search="true"\
+                                    id="'+tag+'committee_'+i+ '" class="form-control" title="Select Committee Members"> ';
+                            for (var j = 0; j < resp.profs.length; j++) {
+                                html += '<option value="'+resp.profs[j]['id']+'"> '+resp.profs[j]['name']+"</option>";
+                            }
+                            html += '</select>';
+                        html += ' </div>';
+                    }
+                    $("#"+whereto).html(html);
+                    for (var i = 0; i < num_committee ; i++) {
+                        $("#"+tag+"committee_"+i).selectpicker();
+                    }
+                },
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        $("#grade").selectpicker();
+        $("#s_grade").selectpicker();
+        $("#editgrade").selectpicker();
+        $("#s_editgrade").selectpicker();
+        $(document).on("click", "#editproject", function (event) {
+            if($(this).children("input").length > 0) return false;
+
+            var modal = document.getElementById("myModal");
+            var cancel = document.getElementById("cancel");
+            modal.style.display = "block";
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            cancel.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+        $(document).on("click", "#editseminar", function (event) {
+            if($(this).children("input").length > 0) return false;
+
+            var modal = document.getElementById("s_myModal");
+            var cancel = document.getElementById("s_cancel");
+            modal.style.display = "block";
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            cancel.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="snackbar"></div>
+
+<div style="text-align: center; margin-left:10%; margin-right:10%; margin-bottom:5%">
+    <h1><b>Download Semester Data</b></h1>
+    <div id="download_sem_data">
+        <div class="row justify-content-md-center">
+            <form action="/downloadSemCourseAllot">
+                <div class="col-md-12" style="margin-bottom:30px;">
+                    <div class="col-md-6">
+                        <label>Available Semesters</label>
+                        <select data-live-search="true" required title="Semesters" required class="form-control" name="download_sem_1">
+                            <option value=""> -- Select --</option>
+                            {% for semester in semesters %}
+                            <option value="{{semester.id}}">{{semester.semester}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6" style="text-align: center; padding-top:7px;">
+                        <input type="submit" value="Download Course Allotments" class="btn btn-success btn-lg" />
+                    </div>
+                </div>
+            </form>
+            <form action="/downloadSemTAAllot">
+                <div class="col-md-12" style="margin-bottom:30px;">
+                    <hr>
+                    <div class="col-md-6">
+                        <label>Available Semesters</label>
+                        <select data-live-search="true" required title="Semesters" required class="form-control" name="download_sem_2">
+                            <option value=""> -- Select --</option>
+                            {% for semester in semesters %}
+                            <option value="{{semester.id}}">{{semester.semester}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6" style="text-align: center; padding-top:7px;">
+                        <input type="submit" value="Download TA Allotments" class="btn btn-success btn-lg" />
+                    </div>
+                </div>
+            </form>
+            <form action="/downloadStudentGrades">
+                <div class="col-md-12" style="margin-bottom:30px;">
+                    <hr>
+                    <div class="col-md-6">
+                        <label>Available Semesters</label>
+                        <select data-live-search="true" required title="Semesters" required class="form-control" name="download_sem_3">
+                            <option value=""> -- Select --</option>
+                            {% for semester in semesters %}
+                            <option value="{{semester.id}}">{{semester.semester}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6" style="text-align: center; padding-top:7px;">
+                        <input type="submit" value="Download Student Grades" class="btn btn-success btn-lg" />
+                    </div>
+                </div>
+            </form>
+            <form action="/downloadStudentAttendanceList">
+                <div class="col-md-12">
+                    <hr>
+                    <div class="col-md-5">
+                        <label>Available Semesters</label>
+                        <select data-live-search="true" required title="Semesters" required class="form-control" name="download_sem_3">
+                            <option value=""> -- Select --</option>
+                            {% for semester in semesters %}
+                            <option value="{{semester.id}}">{{semester.semester}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Student Missing for last __ Days :</label>
+                        <input type="number" id="days" required name="days" min="0" max="1000" class="form-control">
+                    </div>
+                    <div class="col-md-4" style="text-align: center; padding-top:7px;">
+                        <input type="submit" value="Download Student List" class="btn btn-success btn-lg" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+{% endblock content %}
