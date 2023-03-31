@@ -1,10 +1,4 @@
-# WebProject
 
-Then install all the modules in requirements.txt file using
-""pip install -r requirements.txt ""
-Then run the admin_setup.py file in the enviroment and set up an admin account.
-You are readuy to start the webportal
-Run "" python testbed/run_server.py""
 # WebProject
 
 This is a simple web project that was created for learning purposes. The website displays information about a web portal for department databse management. 
