@@ -14,9 +14,9 @@ DATABASE_FILE = DATA_DIR + 'site.db'
 # Mail Configuration
 mail_port = 587
 mail_server = 'smtp-auth.iitb.ac.in'
-sender_email = 'admin@me.iitb.ac.in'
-server_email = "office.me@iitb.ac.in"
-server_password = 'meiitb@'
+sender_email = ''
+server_email = ""
+server_password = ''
 
 attendance_mail_reciever = 'goelaayush697@gmail.com'
 
